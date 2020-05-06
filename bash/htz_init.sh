@@ -190,8 +190,8 @@ install_software () {
 enable_ufw () {
   ufw allow ssh
   ufw allow 443/tcp
-  yes | ufw enable
-  ufw status
+  log_msg 'enable_ufw' ' * Enable ufw with: yes | ufw enable ...'
+  log_msg 'enable_ufw' ' * Check the status with: ufw status ...'
 }
 
 #' ### Deny root Access
@@ -292,18 +292,18 @@ log_msg $SCRIPT ' * Install system software ...'
 install_software
 
 
-#' ## Enable Firewall
-#' Once the ufw firewall is installed, it must be configured and enabled
-#+ enable-ufw
-log_msg $SCRIPT ' * Enable firewall ...'
-enable_ufw
-
-
 #' ## Deny ssh Login for root
 #' The ssh acces for root should be denied
 #+ deny-ssh-root
 log_msg $SCRIPT ' * Deny ssh access for root ...'
 deny-ssh-root
+
+
+#' ## Enable Firewall
+#' Once the ufw firewall is installed, it must be configured and enabled
+#+ enable-ufw
+log_msg $SCRIPT ' * Enable firewall ...'
+enable_ufw
 
 
 #' ## End of Script
