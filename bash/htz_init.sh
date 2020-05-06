@@ -57,10 +57,11 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -r <root_password> -u <admin_user> -p <admin_password>"
+  $ECHO "Usage: $SCRIPT -r <root_password> -u <admin_user> -p <admin_password> -g <zws_group>"
   $ECHO "  where -r <root_password>   --  root password"
   $ECHO "        -u <admin_user>      --  admin user"
   $ECHO "        -p <admin_password>  --  password for admin user (optional)"
+  $ECHO "        -g <zws_group>       --  additional user group (optional)"
   $ECHO ""
   exit 1
 }
@@ -105,6 +106,105 @@ change_root_password () {
   
 }
 
+#' ### Add Admin User
+#' Specific admin user is added to avoid having to work as root
+#+ add-admin-user
+add_admin_user () {
+  # check whether home-directory already exists
+  if [ -d "/home/$ADMIN_USER" ]
+  then
+    usage "Found existing home directory of admin user: $ADMIN_USER"
+  fi
+  # add user
+  useradd $ADMIN_USER -s /bin/bash -m
+  # set password
+  echo "$ADMIN_USER:$ADMIN_PASSWORD" | chpasswd
+  if [ ! -d "/root/user_admin/created" ]; then mkdir -p /root/user_admin/created;fi
+  echo "$ADMIN_USER:$ADMIN_PASSWORD" > /root/user_admin/created/.${ADMIN_USER}.pwd
+  # add $ADMIN_USER to sudoer
+  usermod -a -G sudo $ADMIN_USER
+}
+
+#' ### Add user group zwsgrp
+#' Users of fb-zws should have special permissions in directory /qualstorzws
+#' this is granted with a special group.
+#+ add-zws-grp-fun
+add_zws_grp () {
+  if [ $(groups | grep $ZWS_GROUP | wc -l) == "0" ]
+  then
+    log_msg 'add_zws_grp' " * Adding group $ZWS_GROUP"
+    groupadd $ZWS_GROUP
+  fi
+}
+
+#' ### Install System Software
+#' The software that is used for further installation is installed
+install_software () {
+  sed -i 's/main/main restricted universe/g' /etc/apt/sources.list
+  apt-get update
+
+  # install softwaree properties commons for add-apt-repository
+  apt-get install -y software-properties-common \
+    apt-utils \
+    build-essential \
+    xserver-xorg-dev \
+    freeglut3 \
+    freeglut3-dev \
+    libopenmpi-dev \
+    openmpi-bin \
+    openmpi-common \
+    libssh-dev \
+    libgit2-dev \
+    libssl-dev \
+    libxml2-dev \
+    libfreetype6-dev \
+    libmagick++-dev \
+    screen \
+    locales \
+    time \
+    rsync \
+    gawk \
+    tzdata \
+    git \
+    ssmtp \
+    mailutils \
+    cargo \
+    dos2unix \
+    doxygen \
+    wget \
+    sshpass \
+    htop \
+    nano \
+    ufw \
+    restic
+    
+  apt-get update
+}
+
+#' ### Enable Firewall
+#' After installing ufw, it must be configured and enabled
+#+ enable-ufw-fun
+enable_ufw () {
+  ufw allow ssh
+  ufw allow 443/tcp
+  yes | ufw enable
+  ufw status
+}
+
+#' ### Deny root Access
+#' Access to the server as user root via ssh is denied, because this user 
+#' is on all linux machines, it is not advisable to permit ssh login as root.
+#+ deny-ssh-root-fun
+deny-ssh-root () {
+  # keep a copy of the original config file
+  cp /etc/ssh/sshd_config /etc/ssh/sshd_config.org
+  cat /etc/ssh/sshd_config.org | sed -e 's/PermitRootLogin yes/PermitRootLogin no/' > /etc/ssh/sshd_config  
+  # restart ssh demon
+  /etc/init.d/ssh restart
+  
+}
+
+
 #' ## Main Body of Script
 #' The main body of the script starts here.
 #+ start-msg, eval=FALSE
@@ -115,13 +215,17 @@ start_msg
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
+ZWS_GROUP=zwsgrp
 ROOT_PASSWORD=""
 ADMIN_USER="quagadmin"
 ADMIN_PASSWORD=""
-while getopts ":r:u:p:h" FLAG; do
+while getopts ":g:r:u:p:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
+      ;;
+    g)
+      ZWS_GROUP=$OPTARG
       ;;
     r)
       ROOT_PASSWORD=$OPTARG
@@ -161,6 +265,42 @@ fi
 log_msg $SCRIPT ' * Change root password ...'
 change_root_password
 
+
+#' ## Add Admin User
+#' Add an admin user
+#+ add-admin-user
+log_msg $SCRIPT ' * Add admin user ...'
+add_admin_user
+
+
+#' ## Add Group for zwsgrp
+#' Add group for all members of fb-zws
+if [ "$ZWS_GROUP" != "" ]
+then
+  log_msg $SCRIPT ' * Add zws group ...'
+  add_zws_grp
+fi
+
+
+#' ## Installation of System Programs
+#' Software that is required for further setup is installed
+#+ install-software
+log_msg $SCRIPT ' * Install system software ...'
+install_software
+
+
+#' ## Enable Firewall
+#' Once the ufw firewall is installed, it must be configured and enabled
+#+ enable-ufw
+log_msg $SCRIPT ' * Enable firewall ...'
+enable_ufw
+
+
+#' ## Deny ssh Login for root
+#' The ssh acces for root should be denied
+#+ deny-ssh-root
+log_msg $SCRIPT ' * Deny ssh access for root ...'
+deny-ssh-root
 
 
 #' ## End of Script
