@@ -141,10 +141,11 @@ add_zws_grp () {
 #' The software that is used for further installation is installed
 install_software () {
   sed -i 's/main/main restricted universe/g' /etc/apt/sources.list
-  apt-get update
+  apt update
+  apt upgrade -y
 
   # install softwaree properties commons for add-apt-repository
-  apt-get install -y software-properties-common \
+  apt install -y software-properties-common \
     apt-utils \
     build-essential \
     xserver-xorg-dev \
@@ -178,7 +179,9 @@ install_software () {
     ufw \
     restic
     
-  apt-get update
+  apt update
+  apt upgrade -y
+  
 }
 
 #' ### Enable Firewall
