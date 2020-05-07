@@ -198,7 +198,7 @@ rstudio_server_install () {
   apt update
   apt install -y gdebi-core
   wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.2.5042-amd64.deb
-  gdebi rstudio-server-1.2.5042-amd64.deb
+  gdebi --n rstudio-server-1.2.5042-amd64.deb
 }
 
 #' ### Shiny Server Installation
@@ -209,7 +209,7 @@ shiny_server_install () {
   # according to https://rstudio.com/products/shiny/download-server/ubuntu/
   R -e "install.packages('shiny', repos='https://cran.rstudio.com/')"
   wget https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.13.944-amd64.deb
-  gdebi shiny-server-1.5.13.944-amd64.deb
+  gdebi --n shiny-server-1.5.13.944-amd64.deb
 }
 
 
