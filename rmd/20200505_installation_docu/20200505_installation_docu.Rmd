@@ -52,10 +52,15 @@ On the server, we run the script with the command
 
 ```
 ./htz_init.sh -r <root_password> -u <admin_user> -p <admin_password>
+# from the local machine
+ssh root@2-htz.quagzws.com '/root/htz_init.sh -r <root_password> -u <admin_user> -p <admin_password>'
 ```
 
 As the last step, we have to enable the firewall with the specified commands that are shown at the end of the script `htz_init.sh`.
 
+
+## Installation of Applications
+The server is mainly used for data science analyses. Hence it is clear that we need the basic data science tools. These tools are installed using the script `htz_install_app.sh`. 
 
 
 

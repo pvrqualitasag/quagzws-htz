@@ -132,6 +132,37 @@ apt_tools_install () {
   apt update
   apt upgrade -y
   
+  log_msg 'apt_tools_install' ' ** Install R packages'
+  R -e "install.packages(c('devtools', \
+'remotes', \
+'BiocManager', \
+'doParallel', \
+'e1071', \
+'foreach', \
+'gridExtra', \
+'MASS', \
+'plyr', \
+'dplyr', \
+'stringdist', \
+'rmarkdown', \
+'knitr', \
+'tinytex', \
+'openxlsx', \
+'LaF', \
+'reshape2', \
+'data.table', \
+'bit64', \
+'tidyverse', \
+'cowplot', \
+'qqman', \
+'svglite', \
+'olsrr', \
+'formatR', \
+'pedigreemm', \
+'xtable', \
+'glmnet', \
+'ISLR'), repos='https://cran.rstudio.com/', dependencies = TRUE)"
+  
   log_msg 'apt_tools_install' ' ** Install pandas and numpy ...'
   # use pip to get numpy and pandas for py3
   /usr/bin/pip3 install pandas

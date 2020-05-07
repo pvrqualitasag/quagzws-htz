@@ -113,16 +113,18 @@ add_admin_user () {
   # check whether home-directory already exists
   if [ -d "/home/$ADMIN_USER" ]
   then
-    usage "Found existing home directory of admin user: $ADMIN_USER"
+    log_msg 'add_admin_user' "Found existing home directory of admin user: $ADMIN_USER"
+  else  
+    # add user
+    useradd $ADMIN_USER -s /bin/bash -m
+    # set password
+    echo "$ADMIN_USER:$ADMIN_PASSWORD" | chpasswd
+    if [ ! -d "/root/user_admin/created" ]; then mkdir -p /root/user_admin/created;fi
+    echo "$ADMIN_USER:$ADMIN_PASSWORD" > /root/user_admin/created/.${ADMIN_USER}.pwd
+    # add $ADMIN_USER to sudoer
+    usermod -a -G sudo $ADMIN_USER
   fi
-  # add user
-  useradd $ADMIN_USER -s /bin/bash -m
-  # set password
-  echo "$ADMIN_USER:$ADMIN_PASSWORD" | chpasswd
-  if [ ! -d "/root/user_admin/created" ]; then mkdir -p /root/user_admin/created;fi
-  echo "$ADMIN_USER:$ADMIN_PASSWORD" > /root/user_admin/created/.${ADMIN_USER}.pwd
-  # add $ADMIN_USER to sudoer
-  usermod -a -G sudo $ADMIN_USER
+
 }
 
 #' ### Add user group zwsgrp
@@ -155,6 +157,7 @@ install_software () {
     openmpi-bin \
     openmpi-common \
     libssh-dev \
+    libcurl4-gnutls-dev \
     libgit2-dev \
     libssl-dev \
     libxml2-dev \
@@ -201,13 +204,18 @@ enable_ufw () {
 #' Access to the server as user root via ssh is denied, because this user 
 #' is on all linux machines, it is not advisable to permit ssh login as root.
 #+ deny-ssh-root-fun
-deny-ssh-root () {
-  # keep a copy of the original config file
-  cp /etc/ssh/sshd_config /etc/ssh/sshd_config.org
+deny_ssh_root () {
+  if [ ! -e /etc/ssh/sshd_config.org ]
+  then
+    log_msg 'deny_ssh_root' ' ** Copy away the original ssh config file ...'
+    # keep a copy of the original config file
+    cp /etc/ssh/sshd_config /etc/ssh/sshd_config.org
+  fi
+  log_msg 'deny_ssh_root' ' ** Deny ssh access to root ...'
   cat /etc/ssh/sshd_config.org | sed -e 's/PermitRootLogin yes/PermitRootLogin no/' > /etc/ssh/sshd_config  
   # restart ssh demon
   /etc/init.d/ssh restart
-  
+
 }
 
 
@@ -299,7 +307,7 @@ install_software
 #' The ssh acces for root should be denied
 #+ deny-ssh-root
 log_msg $SCRIPT ' * Deny ssh access for root ...'
-deny-ssh-root
+deny_ssh_root
 
 
 #' ## Enable Firewall
