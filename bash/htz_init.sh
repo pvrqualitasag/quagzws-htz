@@ -158,6 +158,7 @@ install_software () {
     libgit2-dev \
     libssl-dev \
     libxml2-dev \
+    libcurl4-openssl-dev \
     libfreetype6-dev \
     libmagick++-dev \
     screen \
@@ -177,7 +178,9 @@ install_software () {
     htop \
     nano \
     ufw \
-    restic
+    restic \
+    nginx \
+    letsencrypt 
     
   apt update
   apt upgrade -y

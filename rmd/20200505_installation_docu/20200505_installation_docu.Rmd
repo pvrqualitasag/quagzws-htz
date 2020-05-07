@@ -14,7 +14,52 @@ The process when renting a new dedicated server with Hetzner is described.
 
 
 ## Order
+The server is ordered on the website https://www.hetzner.de/ under the `Dedicated`-Tab. We use the `Serverbörse` to select the machine which suits our needs. After the order is placed, the order status is sent via E-Mail. As soon as the server is available, the ip-address of the server together with the root-password is sent via E-Mail. At the same time, the server also appears in the server-section of the Hetzner-Robot.  
 
 
 ## Image Installation
 Follow https://wiki.hetzner.de/index.php/Installimage
+
+First, the configuration file `input/autosetup` is uploaded to the server. 
+
+```
+scp input/autosetup root@2-htz.quagzws.com:/
+```
+
+Then we start the automatic setup with 
+
+```
+installimage -a -c /autosetup
+```
+
+The started command does the following points
+
+* configuration of the disk-layout and the RAID-system
+* setting of the hostname
+* installation of the specified image.
+
+As soon as the above installation process is finished, the server can be restarted. The server can be accessed via root and the password set by the rescue system. 
+
+
+## Installation of System Software
+The result of the `installimage` statement is a server with a minimal version of the operating system. After that we require more packages to be installed. Furthermore, we create an admin user and deny the user root to login via ssh. All this is done with an initialisation script. The first step is to copy the intialisation script to the new server. From the local machine, this is done with 
+
+```
+scp bash/htz_init.sh root@2-htz.quagzws.com:/root
+```
+
+On the server, we run the script with the command
+
+```
+./htz_init.sh -r <root_password> -u <admin_user> -p <admin_password>
+```
+
+As the last step, we have to enable the firewall with the specified commands that are shown at the end of the script `htz_init.sh`.
+
+
+
+
+
+
+
+
