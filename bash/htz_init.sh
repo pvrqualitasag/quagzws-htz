@@ -157,8 +157,6 @@ install_software () {
     openmpi-bin \
     openmpi-common \
     libssh-dev \
-    libcurl4-gnutls-dev \
-    libgit2-dev \
     libssl-dev \
     libxml2-dev \
     libcurl4-openssl-dev \
