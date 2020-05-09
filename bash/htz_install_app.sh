@@ -199,6 +199,7 @@ rstudio_server_install () {
   apt install -y gdebi-core
   wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.2.5042-amd64.deb
   gdebi rstudio-server-1.2.5042-amd64.deb
+  rm rstudio-server-1.2.5042-amd64.deb
 }
 
 #' ### Shiny Server Installation
@@ -210,6 +211,14 @@ shiny_server_install () {
   R -e "install.packages('shiny', repos='https://cran.rstudio.com/')"
   wget https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.13.944-amd64.deb
   gdebi shiny-server-1.5.13.944-amd64.deb
+  rm shiny-server-1.5.13.944-amd64.deb
+}
+
+#' ### Nginx Configuration
+#' The configuration of nginx is generated from a template
+config_nginx () {
+  log_msg 'config_nginx' ' ** Generate nginx from template ...'
+  
 }
 
 
@@ -287,14 +296,19 @@ curl_tools_install
 
 #' ## RStudio-Server
 #' Installation of rstudio server
-log_msg "$SCRIPT" ' * Install RStudio-server'
+log_msg "$SCRIPT" ' * Install RStudio-server ...'
 rstudio_server_install
 
 
 #' ## Shiny Server
 #' Installation of shiny server
-log_msg "$SCRIPT" ' * Install shiny server'
+log_msg "$SCRIPT" ' * Install shiny server ...'
 shiny_server_install
+
+#' ## Nginx Configuration
+#' The nginx configuration is generated using a template
+log_msg "$SCRIPT" ' * Configure nginx ...'
+config_nginx
 
 
 #' ## End of Script
