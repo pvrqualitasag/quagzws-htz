@@ -63,6 +63,8 @@ As the last step, we have to enable the firewall with the specified commands tha
 The server is mainly used for data science analyses. Hence it is clear that we need the basic data science tools. These tools are installed using the script `htz_install_app.sh`. 
 
 
+## Generate Certificate
+
 
 
 

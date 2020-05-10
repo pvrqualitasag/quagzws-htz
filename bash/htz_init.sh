@@ -194,6 +194,7 @@ install_software () {
 enable_ufw () {
   ufw allow ssh
   ufw allow 443/tcp
+  ufw allow 80/tcp
   log_msg 'enable_ufw' ' * Enable ufw with: yes | ufw enable ...'
   log_msg 'enable_ufw' ' * Check the status with: ufw status ...'
 }
