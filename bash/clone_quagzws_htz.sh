@@ -1,20 +1,25 @@
 #!/bin/bash
 #' ---
-#' title: Update Repository quagzws-htz
-#' date:  2019-10-31 10:17:31
+#' title: Clone Repository quagzws-htz
+#' date:  2020-05-10 12:30:51
 #' author: Peter von Rohr
 #' ---
 #' ## Purpose
-#' Utility scripts related to singularity are provided on each server through the 
-#' repository `quagzws-htz`. Deployment and updates of these tools is done with 
-#' a `git pull` command.
+#' Seamless inital clone of the repository quagzws-htz. 
 #'
 #' ## Description
-#' The update is done via a singularity exec statement on the running instance on every server. This
-#' exec statement takes as argument a shell command which is executed on the singularity instance. 
-#' The shell command contains the `git pull` statement.
+#' Clone the repository quagzws-htz onto a new remote machine.
 #'
-#' ## Bash Settings
+#' ## Details
+#' The repository quagzws-htz is used to install new machines from a remote location. 
+#' All tools required for the installation and configuration are contained in this 
+#' repository.
+#'
+#' ## Example
+#' ./clone_quagzws-htz.sh
+#'
+#' ## Set Directives
+#' General behavior of the script is driven by the following settings
 #+ bash-env-setting, eval=FALSE
 set -o errexit    # exit immediately, if single command exits with non-zero status
 set -o nounset    # treat unset variables as errors
@@ -54,7 +59,7 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -b <branch_reference> -s <server_name>"
+  $ECHO "Usage: $SCRIPT  -b <branch_reference> -s <server_name>"
   $ECHO "  where -s <server_name>     --  optional, run package update on single server"
   $ECHO "        -b <repo_reference>  --  optional, update to a branch reference"
   $ECHO ""
@@ -64,7 +69,6 @@ usage () {
 #' ### Start Message
 #' The following function produces a start message showing the time
 #' when the script started and on which server it was started.
-#+ start-msg-fun, eval=FALSE
 #+ start-msg-fun, eval=FALSE
 start_msg () {
   $ECHO "********************************************************************************"
@@ -94,34 +98,62 @@ log_msg () {
   $ECHO "[${l_RIGHTNOW} -- ${l_CALLER}] $l_MSG"
 }
 
+
 #' ### Update For a Given Server
 #' The following function runs the package update on a
 #' specified server.
 #+ update-pkg-fun
-update_repo () {
+clone_repo () {
   local l_SERVER=$1
-  log_msg 'update_repo' "Running update on $l_SERVER"
+  log_msg 'clone_repo' "Running update on $l_SERVER"
   if [ "$REFERENCE" != "" ]
   then
-    ssh zws@$l_SERVER "git -C $REPOPATH pull -b $REFERENCE"
+    ssh zws@$l_SERVER 'QSRCDIR=/home/quagadmin/source; \
+QHTZDIR=${QSRCDIR}/quagzws-htz; \
+if [ ! -d "$QSRCDIR" ]; then mkdir -p $QSRCDIR;fi; \
+if [ ! -d "$QHTZDIR" ]; then \
+  git -C "$QSRCDIR" clone https://github.com/pvrqualitasag/quagzws-htz.git -b "$REFERENCE"; \
+else \
+  echo "$QHTZDIR already exists, run updated_quagzws_htz.sh"; \
+fi'
   else
-    ssh zws@$l_SERVER "git -C $REPOPATH pull"
+    ssh zws@$l_SERVER 'QSRCDIR=/home/quagadmin/source; \
+QHTZDIR=${QSRCDIR}/quagzws-htz; \
+if [ ! -d "$QSRCDIR" ]; then mkdir -p $QSRCDIR;fi; \
+if [ ! -d "$QHTZDIR" ]; then \
+  git -C "$QSRCDIR" clone https://github.com/pvrqualitasag/quagzws-htz.git; \
+else \
+  echo "$QHTZDIR already exists, run updated_quagzws_htz.sh"; \
+fi'
   fi
 }
+
 
 #' ### Update repository on local server
 #' In the case, where this script is called from the local server, 
 #' then we do not need to use ssh. Furthermore it might be important to check
 #' whether we are inside of the container or not.
 #+ local-update-repo
-local_update_repo () {
-  log_msg 'local_update_repo' "Running update on $SERVER"
+local_clone_repo () {
+  log_msg 'local_clone_repo' "Running update on $SERVER"
+  QSRCDIR=/home/quagadmin/source
+  QHTZDIR=${QSRCDIR}/quagzws-htz
+  if [ ! -d "$QSRCDIR" ]; then mkdir -p $QSRCDIR;fi
+
   # check whether we are inside of a singularity container
   if [ "$REFERENCE" != "" ]
   then
-    git -C $REPOPATH pull -b $REFERENCE
+    if [ ! -d "$QHTZDIR" ]; then
+      git -C "$QSRCDIR" clone https://github.com/pvrqualitasag/quagzws-htz.git -b "$REFERENCE"
+    else \
+      echo "$QHTZDIR already exists, run updated_quagzws_htz.sh"
+    fi
   else
-    git -C $REPOPATH pull
+    if [ ! -d "$QHTZDIR" ]; then
+      git -C "$QSRCDIR" clone https://github.com/pvrqualitasag/quagzws-htz.git
+    else 
+      echo "$QHTZDIR already exists, run updated_quagzws_htz.sh"
+    fi
   fi  
 }
 
@@ -162,7 +194,6 @@ done
 
 shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
 
-
 #' ## Run Updates
 #' Decide whether to run the update on one server or on all servers on the list
 if [ "$SERVERNAME" != "" ]
@@ -170,23 +201,22 @@ then
   # if this script is called from $SERVERNAME, do local update
   if [ "$SERVERNAME" == "$SERVER" ]
   then
-    local_update_repo
+    local_clone_repo
   else
-    update_repo $SERVERNAME
+    clone_repo $SERVERNAME
   fi  
 else
   for s in ${SERVERS[@]}
   do
     if [ "$s" == "$SERVER" ]
     then
-      local_update_repo
+      local_clone_repo
     else
-      update_repo $s
+      clone_repo $s
     fi  
     sleep 2
   done
 fi
-
 
 #' ## End of Script
 #+ end-msg, eval=FALSE
