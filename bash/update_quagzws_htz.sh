@@ -54,9 +54,10 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -b <branch_reference> -s <server_name>"
+  $ECHO "Usage: $SCRIPT -b <branch_reference> -s <server_name> -u <remote_user>"
   $ECHO "  where -s <server_name>     --  optional, run package update on single server"
   $ECHO "        -b <repo_reference>  --  optional, update to a branch reference"
+  $ECHO "        -u <remote_user>     --  optional, username of remote user"
   $ECHO ""
   exit 1
 }
@@ -103,9 +104,9 @@ update_repo () {
   log_msg 'update_repo' "Running update on $l_SERVER"
   if [ "$REFERENCE" != "" ]
   then
-    ssh zws@$l_SERVER "git -C $REPOPATH pull -b $REFERENCE"
+    ssh $REMOTEUSER@$l_SERVER "git -C $REPOPATH pull -b $REFERENCE"
   else
-    ssh zws@$l_SERVER "git -C $REPOPATH pull"
+    ssh $REMOTEUSER@$l_SERVER "git -C $REPOPATH pull"
   fi
 }
 
@@ -135,12 +136,13 @@ start_msg
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
+REMOTEUSER=quagadmin
 SERVERS=(1-htz.quagzws.com 2-htz.quagzws.com)
 SERVERNAME=""
 REFERENCE=""
 REPOROOT=/home/quagadmin/source
 REPOPATH=$REPOROOT/quagzws-htz
-while getopts ":b:s:h" FLAG; do
+while getopts ":b:s:u:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
@@ -150,6 +152,9 @@ while getopts ":b:s:h" FLAG; do
       ;;
     s)
       SERVERNAME=$OPTARG
+      ;;
+    u)
+      REMOTEUSER=$OPTARG
       ;;
     :)
       usage "-$OPTARG requires an argument"

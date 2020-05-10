@@ -59,9 +59,10 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT  -b <branch_reference> -s <server_name>"
+  $ECHO "Usage: $SCRIPT  -b <branch_reference> -s <server_name> -u <remote_user>"
   $ECHO "  where -s <server_name>     --  optional, run package update on single server"
   $ECHO "        -b <repo_reference>  --  optional, update to a branch reference"
+  $ECHO "        -u <remote_user>     --  optional, username of remote user"
   $ECHO ""
   exit 1
 }
@@ -108,7 +109,7 @@ clone_repo () {
   log_msg 'clone_repo' "Running update on $l_SERVER"
   if [ "$REFERENCE" != "" ]
   then
-    ssh zws@$l_SERVER 'QSRCDIR=/home/quagadmin/source; \
+    ssh $REMOTEUSER@$l_SERVER 'QSRCDIR=/home/quagadmin/source; \
 QHTZDIR=${QSRCDIR}/quagzws-htz; \
 if [ ! -d "$QSRCDIR" ]; then mkdir -p $QSRCDIR;fi; \
 if [ ! -d "$QHTZDIR" ]; then \
@@ -117,7 +118,7 @@ else \
   echo "$QHTZDIR already exists, run updated_quagzws_htz.sh"; \
 fi'
   else
-    ssh zws@$l_SERVER 'QSRCDIR=/home/quagadmin/source; \
+    ssh $REMOTEUSER@$l_SERVER 'QSRCDIR=/home/quagadmin/source; \
 QHTZDIR=${QSRCDIR}/quagzws-htz; \
 if [ ! -d "$QSRCDIR" ]; then mkdir -p $QSRCDIR;fi; \
 if [ ! -d "$QHTZDIR" ]; then \
@@ -167,6 +168,7 @@ start_msg
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
+REMOTEUSER=quagadmin
 SERVERS=(1-htz.quagzws.com 2-htz.quagzws.com)
 SERVERNAME=""
 REFERENCE=""
@@ -182,6 +184,9 @@ while getopts ":b:s:h" FLAG; do
       ;;
     s)
       SERVERNAME=$OPTARG
+      ;;
+    u)
+      REMOTEUSER=$OPTARG
       ;;
     :)
       usage "-$OPTARG requires an argument"
