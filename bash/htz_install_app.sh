@@ -71,8 +71,9 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -q <server_fqdname>"
+  $ECHO "Usage: $SCRIPT -q <server_fqdname> -l <local_app_dir>"
   $ECHO "  where -q <server_fqdname>  --  FQDNAME of server to be configured"
+  $ECHO "        -l <local_app_dir>   --  remote directory including username usable with scp to be copied to new server (optional)"
   $ECHO ""
   exit 1
 }
@@ -187,6 +188,23 @@ curl_tools_install () {
   
 }
 
+
+#' ### Installation of Local Tools
+#' Local tools are installed based on an input file containing the locations from 
+#' where the tools can be copied from
+#+ local-tools-install-fun
+local_tools_install () {
+  local l_TOOSDIR=$1
+  local l_LOCALDIR=$(echo $l_TOOSDIR | cut -d ':' -f 2)
+  # check whether l_LOCALDIR exists
+  if [ ! -d "$l_LOCALDIR" ];then 
+    log_msg 'local_tools_install' ' ** Created $$l_LOCALDIR ...'
+    mkdir -p $l_LOCALDIR
+  fi
+  log_msg 'local_tools_install' ' ** Installation of local tools from $l_TOOSDIR ...'
+  scp -r $l_TOOSDIR $l_LOCALDIR 
+}
+
 #' ### Rstudio Server Installation
 #' The rstudio server is installed
 #+ rstudio-server-install-fun
@@ -195,9 +213,15 @@ rstudio_server_install () {
   # according to https://rstudio.com/products/rstudio/download-server/debian-ubuntu/
   apt update
   apt install -y gdebi-core
-  wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.2.5042-amd64.deb
-  gdebi --n rstudio-server-1.2.5042-amd64.deb
-  rm rstudio-server-1.2.5042-amd64.deb
+  # check whether rstudio server has already been installed
+  if [ "$(service rstudio-server status 2> /dev/null | wc -l)" == "0" ]
+  then
+    wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.2.5042-amd64.deb
+    gdebi --n rstudio-server-1.2.5042-amd64.deb
+    rm rstudio-server-1.2.5042-amd64.deb
+  else 
+    log_msg 'rstudio_server_install' ' ** Rstudio server already seams to be installed...'
+  fi
 }
 
 #' ### Shiny Server Installation
@@ -205,11 +229,19 @@ rstudio_server_install () {
 #+ shiny-server-install-fun
 shiny_server_install () {
   log_msg 'shiny_server_install' ' ** Installation of shiny server ...'
-  # according to https://rstudio.com/products/shiny/download-server/ubuntu/
-  R -e "install.packages('shiny', repos='https://cran.rstudio.com/')"
-  wget https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.13.944-amd64.deb
-  gdebi --n shiny-server-1.5.13.944-amd64.deb
-  rm shiny-server-1.5.13.944-amd64.deb
+  
+  # check whether rstudio server has already been installed
+  if [ "$(service shiny-server status 2> /dev/null | wc -l)" == "0" ]
+  then
+    # according to https://rstudio.com/products/shiny/download-server/ubuntu/
+    R -e "install.packages('shiny', repos='https://cran.rstudio.com/')"
+    wget https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.13.944-amd64.deb
+    gdebi --n shiny-server-1.5.13.944-amd64.deb
+    rm shiny-server-1.5.13.944-amd64.deb
+  else 
+    log_msg 'shiny_server_install' ' ** Shiny server already seams to be installed...'
+  fi
+    
 }
 
 #' ### Nginx Configuration
@@ -219,7 +251,27 @@ config_nginx () {
   # check availablility of templated
   local l_NGINXTMPL=/home/quagadmin/source/quagzws-htz/input/nginx/n-htz_nginx.template
   if [ ! -d "$l_NGINXTMPL" ]; then usage " * ERROR: cannot find nginx-template: $l_NGINXTMPL";fi
-  cat $l_NGINXTMPL | $FQDNAME
+  # generate nginx config file name from $FQDNAME
+  local l_NGINXCONFIG=/etc/nginx/sites-enabled/$(echo $FQDNAME | cut -d '.' -f1)
+  if [ -f "$l_NGINXCONFIG" ]
+  then 
+    log_msg 'config_nginx' ' * nginx config file already exists'
+  else  
+    # replace placeholder in template file
+    log_msg 'config_nginx' ' ** Create nginx logfile from template ...'
+    cat $l_NGINXTMPL | | sed -e "s/{FQDNAME}/$FQDNAME/" > $l_NGINXCONFIG
+  fi  
+  # check whether referenced certificates are available
+  grep ssl_certificate $l_NGINXCONFIG | cut -d ' ' -f4 | sed -e 's/;//' | while read f
+  do
+    if [ -f "$f" ]
+    then
+      log_msg 'config_nginx' " ** Found certificate file: $f"
+    else
+      log_msg 'config_nginx' " * Cannot find $f -- RUN `letsencrypt certonly` to generate the certificates."
+    fi
+  done
+  
 
 }
 
@@ -235,10 +287,14 @@ start_msg
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
 FQDNAME=""
-while getopts ":q:h" FLAG; do
+LOCALDIR=""
+while getopts ":l:q:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
+      ;;
+    l)
+      LOCALDIR=$OPTARG
       ;;
     q)
       FQDNAME=$OPTARG
@@ -275,6 +331,26 @@ apt_tools_install
 log_msg "$SCRIPT" ' * Curl tools installation ...'
 curl_tools_install
 
+
+#' ## Local Tools Installation
+#' Local tools are programs that are obtained or purchased and cannot be downloaded from 
+#' anywhere. Hence they are just copied from an existing installation.
+if [ "$LOCALDIR" != "" ]
+then
+  if [ -f "$LOCALDIR" ]
+  then
+    # installation of a list of local apps
+    cat $LOCALDIR | while read f
+    do
+      log_msg "$SCRIPT" ' * Local tools installation of $f ...'
+      local_tools_install $f
+      sleep 2
+    done
+  else
+    log_msg "$SCRIPT" ' * Local tools installation $LOCALDIR ...'
+    local_tools_install $LOCALDIR
+  fi  
+fi
 
 #' ## RStudio-Server
 #' Installation of rstudio server
