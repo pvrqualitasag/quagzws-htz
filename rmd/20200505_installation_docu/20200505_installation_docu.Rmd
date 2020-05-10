@@ -20,15 +20,28 @@ The server is ordered on the website https://www.hetzner.de/ under the `Dedicate
 ## Image Installation
 Follow https://wiki.hetzner.de/index.php/Installimage
 
-First, the configuration file `input/autosetup` is uploaded to the server. 
+First, the configuration file for the image installation is prepared and then uploaded to the server. 
+
+```{r, eval=FALSE}
+con_as_tmpl <- file(description = "input/installimage/autosetup.template")
+vec_as_tmpl <- readLines(con = con_as_tmpl)
+close(con_as_tmpl)
+s_as_tmpl <- paste0(vec_as_tmpl, collapse = '\n')
+HOSTNAME <- '2-htz.quagzws.com'
+cat(glue::glue(s_as_tmpl), file = 'autosetup')
+```
+
+Upload the generated autosetup to the server
+
+```{bash}
+scp autosetup root@2-htz.quagzws.com:/
+rm autosetup
+```
+
+Then we start the automatic setup on the new server with 
 
 ```
-scp input/autosetup root@2-htz.quagzws.com:/
-```
-
-Then we start the automatic setup with 
-
-```
+# ssh root@HOSTNAME
 installimage -a -c /autosetup
 ```
 
@@ -60,7 +73,21 @@ As the last step, we have to enable the firewall with the specified commands tha
 
 
 ## Installation of Applications
-The server is mainly used for data science analyses. Hence it is clear that we need the basic data science tools. These tools are installed using the script `htz_install_app.sh`. 
+The server is mainly used for data science analyses. Hence it is clear that we need the basic data science tools. These tools are installed using the script `htz_install_app.sh`. The app-installation script is deployed via the github repository `quagzws-htz`. The first step is to clone the repository onto the new server. This can be done using `git` which is already installed. 
+
+```
+ssh quagadmin@2-htz.quagzws.com QUAGHTZROOT=/home/quagadmin/source;if [ ! -d "$QUAGHTZROOT" ];then mkdir -p $QUAGHTZROOT;fi cd $QUAGHTZROOT;git clone https://github.com/pvrqualitasag/quagzws-htz.git'
+```
+
+Once the repository is cloned, then we can start the app-installation script. Auf dem Server lassen wir das Skript als root laufen.
+
+```
+sudo su - -c'/home/quagadmin/source/quagzws-htz/bash/htz_install_app.sh'
+```
+
+
+
+
 
 
 ## Generate Certificate
