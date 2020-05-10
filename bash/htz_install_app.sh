@@ -71,10 +71,8 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -a <a_example> -b <b_example> -c"
-  $ECHO "  where -a <a_example> ..."
-  $ECHO "        -b <b_example> (optional) ..."
-  $ECHO "        -c (optional) ..."
+  $ECHO "Usage: $SCRIPT -q <server_fqdname>"
+  $ECHO "  where -q <server_fqdname>  --  FQDNAME of server to be configured"
   $ECHO ""
   exit 1
 }
@@ -218,7 +216,10 @@ shiny_server_install () {
 #' The configuration of nginx is generated from a template
 config_nginx () {
   log_msg 'config_nginx' ' ** Generate nginx from template ...'
-  
+  # check availablility of templated
+  local l_NGINXTMPL=/home/quagadmin/source/quagzws-htz/input/nginx/n-htz_nginx.template
+  if [ ! -d "$l_NGINXTMPL" ]; then usage " * ERROR: cannot find nginx-template: $l_NGINXTMPL";fi
+  cat $l_NGINXTMPL | $FQDNAME
 
 }
 
@@ -233,53 +234,33 @@ start_msg
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
-# a_example=""
-# b_example=""
-# c_example=""
-# while getopts ":a:b:ch" FLAG; do
-#   case $FLAG in
-#     h)
-#       usage "Help message for $SCRIPT"
-#       ;;
-#     a)
-#       a_example=$OPTARG
-# OR for files
-#      if test -f $OPTARG; then
-#        a_example=$OPTARG
-#      else
-#        usage "$OPTARG isn't a regular file"
-#      fi
-# OR for directories
-#      if test -d $OPTARG; then
-#        a_example=$OPTARG
-#      else
-#        usage "$OPTARG isn't a directory"
-#      fi
-#       ;;
-#     b)
-#       b_example=$OPTARG
-#       ;;
-#     c)
-#       c_example="c_example_value"
-#       ;;
-#     :)
-#       usage "-$OPTARG requires an argument"
-#       ;;
-#     ?)
-#       usage "Invalid command line argument (-$OPTARG) found"
-#       ;;
-#   esac
-# done
-# 
-# shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
+FQDNAME=""
+while getopts ":q:h" FLAG; do
+  case $FLAG in
+    h)
+      usage "Help message for $SCRIPT"
+      ;;
+    q)
+      FQDNAME=$OPTARG
+      ;;
+    :)
+      usage "-$OPTARG requires an argument"
+      ;;
+    ?)
+      usage "Invalid command line argument (-$OPTARG) found"
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
 
 #' ## Checks for Command Line Arguments
 #' The following statements are used to check whether required arguments
 #' have been assigned with a non-empty value
 #+ argument-test, eval=FALSE
-# if test "$a_example" == ""; then
-#   usage "-a a_example not defined"
-# fi
+if test "$FQDNAME" == ""; then
+  usage "-q <server_fqdname> not defined"
+fi
 
 
 #' ## Apt-based Tools

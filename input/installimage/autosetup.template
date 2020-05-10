@@ -14,7 +14,7 @@ SWRAIDLEVEL 1
 BOOTLOADER grub
 
 ###  Hostname
-HOSTNAME {HOSTNAME}
+HOSTNAME {FQDNAME}
 
 ###  Partition
 PART swap swap 4G
