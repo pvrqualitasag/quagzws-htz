@@ -170,14 +170,23 @@ apt_tools_install () {
 }
 
 #' ### Installation of Tools with curl
+#' Tools downloaded with curl and unpacked to a specific directory. The applications 
+#' are added to the path such that they can be used without specifying the path.
+#+ curl-tools-install-fun
 curl_tools_install () {
-  
   log_msg 'curl_tools_install' ' ** Install julia ...'
   # Install jula from download-host
   curl -sSL "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.1-linux-x86_64.tar.gz" > julia.tar.gz 
   mkdir -p /opt/julia 
   tar -C /opt/julia -zxf julia.tar.gz 
   rm -f julia.tar.gz
+  log_msg 'curl_tools_install' ' ** Adding julia path ...'
+  echo '
+# Adding julia to path
+julia_path=/opt/julia/julia-1.1.1/bin
+if [ -n "${PATH##*${julia_path}}" -a -n "${PATH##*${julia_path}:*}" ]; then
+   export PATH=$PATH:${julia_path}
+fi' >> /etc/profile.d/apps-bin-path.sh
 
   log_msg 'curl_tools_install' ' ** Install openjdk8 ...'
   # install OpenJDK 8 (LTS) from https://adoptopenjdk.net
@@ -185,9 +194,14 @@ curl_tools_install () {
   mkdir -p /opt/openjdk
   tar -C /opt/openjdk -xf openjdk8.tar.gz
   rm -f openjdk8.tar.gz
+  echo '
+# Adding jdk to path
+jdk_path=/opt/openjdk/jdk8u222-b10/bin
+if [ -n "${PATH##*${jdk_path}}" -a -n "${PATH##*${jdk_path}:*}" ]; then
+   export PATH=$PATH:${jdk_path}
+fi' >> /etc/profile.d/apps-bin-path.sh
   
 }
-
 
 #' ### Installation of Local Tools
 #' Local tools are installed based on an input file containing the locations from 
@@ -203,6 +217,13 @@ local_tools_install () {
   fi
   log_msg 'local_tools_install' ' ** Installation of local tools from $l_TOOSDIR ...'
   scp -r $l_TOOSDIR $l_LOCALDIR 
+  echo '
+# Adding linuxBin to path
+linux_bin_path=/qualstorzws01/data_projekte/linuxBin
+if [ -n "${PATH##*${linux_bin_path}}" -a -n "${PATH##*${linux_bin_path}:*}" ]; then
+   export PATH=$PATH:${linux_bin_path}
+fi' >> /etc/profile.d/apps-bin-path.sh
+  
 }
 
 #' ### Rstudio Server Installation
