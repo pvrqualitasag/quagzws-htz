@@ -280,7 +280,7 @@ config_nginx () {
   else  
     # replace placeholder in template file
     log_msg 'config_nginx' ' ** Create nginx logfile from template ...'
-    cat $l_NGINXTMPL | | sed -e "s/{FQDNAME}/$FQDNAME/" > $l_NGINXCONFIG
+    cat $l_NGINXTMPL | sed -e "s/{FQDNAME}/$FQDNAME/" > $l_NGINXCONFIG
   fi  
   # check whether referenced certificates are available
   grep ssl_certificate $l_NGINXCONFIG | cut -d ' ' -f4 | sed -e 's/;//' | while read f

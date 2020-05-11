@@ -21,4 +21,5 @@ ssh root@2-htz.quagzws.com '/root/init_htz.sh -r TbDqn3Us7Nom -u quagadmin -p yJ
 
 # fagr
 scp bash/init_htz.sh root@fagr.genmon.ch:/root
+ssh root@fagr.genmon.ch '/root/init_htz.sh -r kkAUt38YfHk7 -u quagadmin -p yJu6eKqJ'
 
