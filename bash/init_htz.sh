@@ -14,7 +14,7 @@
 #' When renting a new remote server, initial steps of changing the password and creating an admin account should be automated
 #'
 #' ## Example
-#' ./bash/htz_init.sh -r <root_password> -u <admin_user> 
+#' ./bash/init_htz.sh -r <root_password> -u <admin_user> 
 #'
 #' ## Set Directives
 #' General behavior of the script is driven by the following settings

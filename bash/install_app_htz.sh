@@ -28,7 +28,7 @@
 #' else
 #'   git -C $QHTZDIR pull
 #' fi
-#' sudo su - -c "$QHTZDIR/bash/htz_install_app.sh"
+#' sudo su - -c "$QHTZDIR/bash/install_app_htz.sh"
 #'
 #' ## Set Directives
 #' General behavior of the script is driven by the following settings
