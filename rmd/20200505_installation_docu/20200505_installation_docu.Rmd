@@ -34,6 +34,7 @@ cat(glue::glue(s_as_tmpl), file = 'autosetup')
 Upload the generated autosetup to the server
 
 ```{bash}
+./bash/create_autosetup.sh -q 2-htz.quagzws.com
 scp autosetup root@2-htz.quagzws.com:/
 rm autosetup
 ```
@@ -58,18 +59,18 @@ As soon as the above installation process is finished, the server can be restart
 The result of the `installimage` statement is a server with a minimal version of the operating system. After that we require more packages to be installed. Furthermore, we create an admin user and deny the user root to login via ssh. All this is done with an initialisation script. The first step is to copy the intialisation script to the new server. From the local machine, this is done with 
 
 ```
-scp bash/htz_init.sh root@2-htz.quagzws.com:/root
+scp bash/init_htz.sh root@2-htz.quagzws.com:/root
 ```
 
 On the server, we run the script with the command
 
 ```
-./htz_init.sh -r <root_password> -u <admin_user> -p <admin_password>
+./init_htz.sh -r <root_password> -u <admin_user> -p <admin_password>
 # from the local machine
-ssh root@2-htz.quagzws.com '/root/htz_init.sh -r <root_password> -u <admin_user> -p <admin_password>'
+ssh root@2-htz.quagzws.com '/root/init_htz.sh -r <root_password> -u <admin_user> -p <admin_password>'
 ```
 
-As the last step, we have to enable the firewall with the specified commands that are shown at the end of the script `htz_init.sh`.
+As the last step, we have to enable the firewall with the specified commands that are shown at the end of the script `init_htz.sh`.
 
 
 ## Installation of Applications

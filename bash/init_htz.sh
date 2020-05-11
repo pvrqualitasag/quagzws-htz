@@ -121,6 +121,8 @@ add_admin_user () {
     echo "$ADMIN_USER:$ADMIN_PASSWORD" | chpasswd
     if [ ! -d "/root/user_admin/created" ]; then mkdir -p /root/user_admin/created;fi
     echo "$ADMIN_USER:$ADMIN_PASSWORD" > /root/user_admin/created/.${ADMIN_USER}.pwd
+    # do a chmod on the info on the user admin
+    chmod -R 700 /root/user_admin
     # add $ADMIN_USER to sudoer
     usermod -a -G sudo $ADMIN_USER
   fi
