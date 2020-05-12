@@ -328,7 +328,7 @@ config_nginx () {
     then
       log_msg 'config_nginx' " ** Found certificate file: $f"
     else
-      log_msg 'config_nginx' " * Cannot find $f -- RUN `letsencrypt certonly` to generate the certificates."
+      log_msg 'config_nginx' " * Cannot find $f -- RUN 'letsencrypt certonly' to generate the certificates."
     fi
   done
 
