@@ -8,7 +8,6 @@ quagadmin@1-htz.quagzws.com:/home/quagadmin/user_admin/created/.pvr.pwd
 quagadmin@1-htz.quagzws.com:/home/quagadmin/user_admin/created/.retoz.pwd
 quagadmin@1-htz.quagzws.com:/home/quagadmin/user_admin/created/.skn.pwd
 quagadmin@1-htz.quagzws.com:/home/quagadmin/user_admin/created/.swidmer.pwd
-quagadmin@1-htz.quagzws.com:/home/quagadmin/user_admin/created/.sws.pwd
 quagadmin@1-htz.quagzws.com:/home/quagadmin/user_admin/created/.tgr.pwd
 quagadmin@1-htz.quagzws.com:/home/quagadmin/user_admin/created/.usu.pwd
 quagadmin@1-htz.quagzws.com:/home/quagadmin/user_admin/created/.zws.pwd

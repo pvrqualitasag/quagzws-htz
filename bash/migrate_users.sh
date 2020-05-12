@@ -57,8 +57,10 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -u <user_file>"
-  $ECHO "  where -u <user_file>  --  list of user files to be transfered"
+  $ECHO "Usage: $SCRIPT -u <user_file> -s <login_shell> -g <user_group>"
+  $ECHO "  where -u <user_file>    --  list of user files to be transfered"
+  $ECHO "        -s <login_shell>  --  login shell for user (optional)"
+  $ECHO "        -g <user_group>   --  additional group for user (optional)"
   $ECHO ""
   exit 1
 }
@@ -95,6 +97,49 @@ log_msg () {
   $ECHO "[${l_RIGHTNOW} -- ${l_CALLER}] $l_MSG"
 }
 
+#' ### Create User Account
+#' Create the user using useradd and set the password with a default shell
+#+ create-user-fun
+create_user () {
+  local l_USERNAME=$1
+  local l_PASS=$2
+  local l_DEFAULTSHELL=$3
+  local l_OUTDIR=${USERADMINDIR}/created
+
+  # check whether home directory of user already exists
+  if [ -d "/home/${l_USERNAME}" ]
+  then
+    log_msg 'create_user' " ** Found home directory for $l_USERNAME ..."
+  else
+    # add user account
+    log_msg 'create_user' " ** Add user account for $l_USERNAME ..."
+    useradd $l_USERNAME -s $l_DEFAULTSHELL -m
+    # password
+    log_msg 'create_user' " ** Set password for $l_USERNAME ..."
+    echo "$l_USERNAME:$l_PASS" | chpasswd
+    # write user info to a file
+    if [ ! -d "$l_OUTDIR" ];then
+      log_msg 'create_user' " ** Create output dir $l_OUTDIR ..."
+      mkdir -p $l_OUTDIR
+    fi
+    # write username and password to a file
+    log_msg 'create_user' " ** Write info to ${l_OUTDIR}/.${l_USERNAME}.pwd ..."
+    echo "${l_USERNAME},${l_PASS}" > "${l_OUTDIR}/.${l_USERNAME}.pwd"
+  fi
+  
+
+}  
+
+#' ### Add user to an additional group
+#' Users can be grouped with user groups
+#+ add-user-to-grp-fun
+add_user_to_grp () {
+  local l_grp=$1
+  local l_user=$2
+  usermod -a -G $l_grp $l_user
+  
+}
+
 
 #' ## Main Body of Script
 #' The main body of the script starts here.
@@ -107,13 +152,22 @@ start_msg
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
 USERFILE=""
-while getopts ":u:h" FLAG; do
+USERGROUP=""
+USERADMINDIR=/root/user_admin
+DEFAULTSHELL=/bin/bash
+while getopts ":g:u:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
       ;;
+    g)
+      USERGROUP=$OPTARG
+      ;;
     u)
       USERFILE=$OPTARG
+      ;;
+    s)
+      DEFAULTSHELL=$OPTARG
       ;;
     :)
       usage "-$OPTARG requires an argument"
@@ -133,16 +187,18 @@ shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
 if test "$USERFILE" == ""; then
   usage "-u user_file not defined"
 fi
-
+if test "$DEFAULTSHELL" == ""; then
+  usage "-s login_shell not defined"
+fi
 
 #' ## Setup a User Admin Directory
 #' The following directory is used for storing user files
 # user-files
-USERADMINDIR=/root/user_admin
 if [ ! -d "$USERADMINDIR" ]
 then
   log_msg "$SCRIPT" " * Create user admin dir: $USERADMINDIR ..."
   mkdir -p $USERADMINDIR
+  chmod 700 $USERADMINDIR
 else
   log_msg "$SCRIPT" " * Found user admin dir: $USERADMINDIR ..."
 fi
@@ -159,9 +215,25 @@ do
   sleep 2
 done
 
-
-
-
+#' ## Create User Accounts
+#' The migrated user files are used to create accounts
+#+ create-user-accounts
+find $USERADMINDIR -maxdepth 1 -name "*.pwd" -print | while read f
+do 
+  log_msg "$SCRIPT" " * Process $f ..."
+  LOGINNAME=$(cat $f | cut -d ',' -f1)
+  LOGINPWD=$(cat $f | cut -d ',' -f2)
+  log_msg "$SCRIPT" " * Create account for $LOGINNAME ..."
+  create_user $LOGINNAME $LOGINPWD $DEFAULTSHELL
+  sleep 2
+  # add user to group, if specified
+  if [ "$USERGROUP" != "" ]
+  then
+    log_msg "$SCRIPT" " * Add $LOGINNAME to group $USERGROUP ..."
+    add_user_to_grp $USERGROUP $LOGINNAME
+    sleep 2
+  fi
+done
 
 
 #' ## End of Script
