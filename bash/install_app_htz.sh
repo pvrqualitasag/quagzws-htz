@@ -235,7 +235,7 @@ local_tools_install () {
   local l_LOCALROOT=$(dirname "l_LOCALDIR")
   # check whether l_LOCALDIR exists
   if [ ! -d "$l_LOCALROOT" ];then 
-    log_msg 'local_tools_install' ' ** Created $l_LOCALROOT ...'
+    log_msg 'local_tools_install' " ** Created $l_LOCALROOT ..."
     mkdir -p $l_LOCALROOT
   fi
   # check whether local dir already exists, if yes do not copy
@@ -243,7 +243,7 @@ local_tools_install () {
   then
     log_msg 'local_tools_install' " ** Local tools already exists in $l_LOCALDIR"
   else
-    log_msg 'local_tools_install' ' ** Installation of local tools from $l_TOOSDIR ...'
+    log_msg 'local_tools_install' " ** Installation of local tools from $l_TOOSDIR ..."
     scp -r $l_TOOSDIR $l_LOCALROOT 
     log_msg 'local_tools_install' ' ** Change owner of $l_LOCALROOT ...'
     chown -R quagadmin:zwsgrp $l_LOCALROOT
