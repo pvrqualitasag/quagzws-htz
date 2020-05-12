@@ -1,5 +1,5 @@
-/qualstorzws01/data_projekte/linuxBin/addBlockcodeToPedi.py
-/qualstorzws01/data_projekte/linuxBin/bashtools
-/qualstorzws01/data_projekte/linuxBin/mix99-17.11.u1
-/qualstorzws01/data_projekte/linuxBin/sqlcl
-/qualstorzws01/data_projekte/linuxBin/vce-Linux-x86_64-gfortran-6.0.2
+quagadmin@1-htz.quagzws.com:/qualstorzws01/data_projekte/linuxBin/addBlockcodeToPedi.py
+quagadmin@1-htz.quagzws.com:/qualstorzws01/data_projekte/linuxBin/bashtools
+quagadmin@1-htz.quagzws.com:/qualstorzws01/data_projekte/linuxBin/mix99-17.11.u1
+quagadmin@1-htz.quagzws.com:/qualstorzws01/data_projekte/linuxBin/sqlcl
+quagadmin@1-htz.quagzws.com:/qualstorzws01/data_projekte/linuxBin/vce-Linux-x86_64-gfortran-6.0.2
