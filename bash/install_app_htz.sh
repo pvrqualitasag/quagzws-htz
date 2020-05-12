@@ -10,14 +10,18 @@
 #' ## Description
 #' Applications that are needed on the server are to be installed and configured. 
 #' The applications are chosen from the definition file of the singularity 
-#' container that is running on the Qualitas-ZWS servers.
+#' container that is running on the Qualitas-ZWS servers. The option -m {all,apt,curl,local,rstudio}
+#' can be used to install only part of the programs. 
 #'
 #' ## Details
 #' The installed applications are the basic data-science tools. Specialised programs 
 #' are copied from an existing server. The data-science tools are either installed 
 #' using `apt` for all applications that are available in ubuntu repositories. 
 #' All other tools are installed using a download with `curl`. The downloaded 
-#' tar.gz-archives are extracted in a specific directory.
+#' tar.gz-archives are extracted in a specific directory. For the curl-tools and the 
+#' local tools the path of all users are extended in /etc/profile.d/apps-bin-path.sh. 
+#' The local tools are copied from a source-server. That does only work, if the 
+#' ssh-key-based login to the source-server. 
 #'
 #' ## Example
 #' QSRCDIR=/home/quagadmin/source
@@ -71,9 +75,10 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -q <server_fqdname> -l <local_app_dir>"
+  $ECHO "Usage: $SCRIPT -q <server_fqdname> -l <local_app_dir> -m <install_mode>"
   $ECHO "  where -q <server_fqdname>  --  FQDNAME of server to be configured"
   $ECHO "        -l <local_app_dir>   --  remote directory including username usable with scp to be copied to new server (optional)"
+  $ECHO "        -m <install_mode>    --  installation mode to selectively install only parts of the applications (optional)"
   $ECHO ""
   exit 1
 }
@@ -243,6 +248,7 @@ rstudio_server_install () {
   else 
     log_msg 'rstudio_server_install' ' ** Rstudio server already seams to be installed...'
   fi
+
 }
 
 #' ### Shiny Server Installation
@@ -292,7 +298,6 @@ config_nginx () {
       log_msg 'config_nginx' " * Cannot find $f -- RUN `letsencrypt certonly` to generate the certificates."
     fi
   done
-  
 
 }
 
@@ -309,13 +314,17 @@ start_msg
 #+ getopts-parsing, eval=FALSE
 FQDNAME=""
 LOCALDIR=""
-while getopts ":l:q:h" FLAG; do
+INSTALLMODE='all'
+while getopts ":l:m:q:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
       ;;
     l)
       LOCALDIR=$OPTARG
+      ;;
+    m)
+      INSTALLMODE=$OPTARG
       ;;
     q)
       FQDNAME=$OPTARG
@@ -338,56 +347,62 @@ shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
 if test "$FQDNAME" == ""; then
   usage "-q <server_fqdname> not defined"
 fi
+if test "$INSTALLMODE" == ""; then
+  usage "-m <install_mode> not defined"
+fi
 
 
 #' ## Apt-based Tools
 #' In a first step, the tools available in ubuntu repositories are installed.
 #+ apt-tools-install
-log_msg "$SCRIPT" ' * Apt tools installation ...'
-apt_tools_install
-
+if [ "$INSTALLMODE" == 'all' ] || [ "$INSTALLMODE" == 'apt' ]
+then
+  log_msg "$SCRIPT" ' * Apt tools installation ...'
+  apt_tools_install
+fi
 
 #' ## Curl-based Tools
 #' Tools not available in an ubuntu repository are downloaded and installed.
-log_msg "$SCRIPT" ' * Curl tools installation ...'
-curl_tools_install
-
+if [ "$INSTALLMODE" == 'all' ] || [ "$INSTALLMODE" == 'curl' ]
+then
+  log_msg "$SCRIPT" ' * Curl tools installation ...'
+  curl_tools_install
+fi
 
 #' ## Local Tools Installation
 #' Local tools are programs that are obtained or purchased and cannot be downloaded from 
 #' anywhere. Hence they are just copied from an existing installation.
-if [ "$LOCALDIR" != "" ]
+if [ "$INSTALLMODE" == 'all' ] || [ "$INSTALLMODE" == 'local' ]
 then
-  if [ -f "$LOCALDIR" ]
+  if [ "$LOCALDIR" != "" ]
   then
-    # installation of a list of local apps
-    cat $LOCALDIR | while read f
-    do
-      log_msg "$SCRIPT" ' * Local tools installation of $f ...'
-      local_tools_install $f
-      sleep 2
-    done
-  else
-    log_msg "$SCRIPT" ' * Local tools installation $LOCALDIR ...'
-    local_tools_install $LOCALDIR
-  fi  
+    if [ -f "$LOCALDIR" ]
+    then
+      # installation of a list of local apps
+      cat $LOCALDIR | while read f
+      do
+        log_msg "$SCRIPT" ' * Local tools installation of $f ...'
+        local_tools_install $f
+        sleep 2
+      done
+    else
+      log_msg "$SCRIPT" ' * Local tools installation $LOCALDIR ...'
+      local_tools_install $LOCALDIR
+    fi  
+  fi
 fi
 
-#' ## RStudio-Server
-#' Installation of rstudio server
-log_msg "$SCRIPT" ' * Install RStudio-server ...'
-rstudio_server_install
-
-
-#' ## Shiny Server
-#' Installation of shiny server
-log_msg "$SCRIPT" ' * Install shiny server ...'
-shiny_server_install
-
-#' ## Nginx Configuration
-#' The nginx configuration is generated using a template
-log_msg "$SCRIPT" ' * Configure nginx ...'
-config_nginx
+#' ## RStudio-Server and Shiny Server
+#' Installation of rstudio server and shiny server
+if [ "$INSTALLMODE" == 'all' ] || [ "$INSTALLMODE" == 'rstudio' ]
+then
+  log_msg "$SCRIPT" ' * Install RStudio-server ...'
+  rstudio_server_install
+  log_msg "$SCRIPT" ' * Install shiny server ...'
+  shiny_server_install
+  log_msg "$SCRIPT" ' * Configure nginx ...'
+  config_nginx
+fi
 
 
 #' ## End of Script

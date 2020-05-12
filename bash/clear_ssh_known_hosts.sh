@@ -58,9 +58,8 @@ usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
   $ECHO "Usage: $SCRIPT -q <fqdn_servername> -s <ssh_known_hosts_file>"
-  $ECHO "  where -q <fqdn_servername> ..."
-  $ECHO "        -b <b_example> (optional) ..."
-  $ECHO "        -c (optional) ..."
+  $ECHO "  where -q <fqdn_servername>      --  server name to be removed"
+  $ECHO "        -s <ssh_known_hosts_file> --  specify the name of the ssh known hosts file(optional) ..."
   $ECHO ""
   exit 1
 }
@@ -108,31 +107,23 @@ start_msg
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
-a_example=""
-b_example=""
+FQNREMOTESERVER=""
+SSHKNOWNHOSTS="/home/${USER}/.ssh/known_hosts"
 c_example=""
-while getopts ":a:b:ch" FLAG; do
+while getopts ":q:s:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
       ;;
-    a)
-      a_example=$OPTARG
-# OR for files
-#      if test -f $OPTARG; then
-#        a_example=$OPTARG
-#      else
-#        usage "$OPTARG isn't a regular file"
-#      fi
-# OR for directories
-#      if test -d $OPTARG; then
-#        a_example=$OPTARG
-#      else
-#        usage "$OPTARG isn't a directory"
-#      fi
+    q)
+      FQNREMOTESERVER=$OPTARG
       ;;
-    b)
-      b_example=$OPTARG
+    s)
+      if [ -f "$OPTARG" ]; then
+        SSHKNOWNHOSTS=$OPTARG
+      else
+        usage " * ERROR cannot find specified ssh known hosts file: $OPTARG"
+      fi
       ;;
     c)
       c_example="c_example_value"
@@ -152,16 +143,19 @@ shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
 #' The following statements are used to check whether required arguments
 #' have been assigned with a non-empty value
 #+ argument-test, eval=FALSE
-if test "$a_example" == ""; then
-  usage "-a a_example not defined"
+if test "$FQNREMOTESERVER" == ""; then
+  usage "-q <fqdn_servername> not defined"
+fi
+if test "$SSHKNOWNHOSTS" == ""; then
+  usage "-s <ssh_known_hosts_file> not defined"
 fi
 
 
-
-#' ## Your Code
-#' Continue to put your code here
-#+ your-code-here
-
+#' ## Removal of Remote Server Entry
+#' Remove the remote server from the known hosts name
+#+ remove-remote-server
+cp ${SSHKNOWNHOSTS} ${SSHKNOWNHOSTS}.org
+grep -v "$FQNREMOTESERVER" ${SSHKNOWNHOSTS}.org > ${SSHKNOWNHOSTS}
 
 
 #' ## End of Script
