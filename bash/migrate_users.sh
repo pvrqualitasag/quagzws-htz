@@ -233,6 +233,9 @@ do
     add_user_to_grp $USERGROUP $LOGINNAME
     sleep 2
   fi
+  log_msg "$SCRIPT" " * Cleanup $f ..."
+  rm $f
+  sleep 2
 done
 
 
