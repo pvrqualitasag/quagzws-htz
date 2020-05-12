@@ -87,10 +87,26 @@ The above command must only be run once. When the repository is on the server, w
 ```
 
 
-Once the repository is cloned, then we can start the app-installation script. Auf dem Server lassen wir das Skript als root laufen.
+Once the repository is cloned, then we can start the app-installation script. 
 
 ```
 sudo su - -c'/home/quagadmin/source/quagzws-htz/bash/install_app_htz.sh -q 2-htz.quagzws.com -l quagadmin@1-htz.quagzws.com:/qualstorzws01/data_projekte/linuxBin'
+```
+
+To install the local tools from a given source-server, we have to first establish a password-less login of the root user to the quagadmin account of the source-server via ssh-keygen. On 2-htz, we run the following commands
+
+```
+sudo su -
+scp quagadmin@1-htz.quagzws.com:/home/quagadmin/.ssh/authorized_keys .
+ssh-keygen -t rsa
+cat ~/.ssh/id_rsa.pub >> authorized_keys
+scp authorized_keys quagadmin@1-htz.quagzws.com:/home/quagadmin/.ssh/authorized_keys
+```
+
+This can be tested using the following command
+
+```
+sudo su - -c'/home/quagadmin/source/quagzws-htz/bash/install_app_htz.sh -q 2-htz.quagzws.com -l quagadmin@1-htz.quagzws.com:/qualstorzws01/data_projekte/linuxBin -m local'
 ```
 
 

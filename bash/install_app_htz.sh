@@ -185,27 +185,44 @@ curl_tools_install () {
   mkdir -p /opt/julia 
   tar -C /opt/julia -zxf julia.tar.gz 
   rm -f julia.tar.gz
-  log_msg 'curl_tools_install' ' ** Adding julia path ...'
-  echo '
+  # define julia path
+  local l_JULIAPATH='/opt/julia/julia-1.1.1/bin'
+  # check whether julia must be added to path
+  if [ "$(grep julia_path /etc/profile.d/apps-bin-path.sh | wc -l)" == "0" ]
+  then
+    log_msg 'curl_tools_install' " ** Adding $l_JULIAPATH to path: $PATH ..."
+    echo "
 # Adding julia to path
-julia_path=/opt/julia/julia-1.1.1/bin
+julia_path=$l_JULIAPATH" >> /etc/profile.d/apps-bin-path.sh
+    echo '
 if [ -n "${PATH##*${julia_path}}" -a -n "${PATH##*${julia_path}:*}" ]; then
    export PATH=$PATH:${julia_path}
 fi' >> /etc/profile.d/apps-bin-path.sh
-
+  else
+    log_msg 'curl_tools_install' " ** Dir $l_JULIAPATH already in path: $PATH ..."
+  fi
   log_msg 'curl_tools_install' ' ** Install openjdk8 ...'
   # install OpenJDK 8 (LTS) from https://adoptopenjdk.net
   curl -sSL "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u222-b10/OpenJDK8U-jdk_x64_linux_hotspot_8u222b10.tar.gz" > openjdk8.tar.gz
   mkdir -p /opt/openjdk
   tar -C /opt/openjdk -xf openjdk8.tar.gz
   rm -f openjdk8.tar.gz
-  echo '
+  # Assign jdk
+  local l_JDKPATH='/opt/openjdk/jdk8u222-b10/bin'
+  # Check whether jdk must be added to path
+  if [ "$(grep jdk_path /etc/profile.d/apps-bin-path.sh | wc -l)" == "0" ]
+  then
+    log_msg 'cur_tools_install' " ** Adding $l_JDKPATH to path: $PATH ..."
+    echo "
 # Adding jdk to path
-jdk_path=/opt/openjdk/jdk8u222-b10/bin
+jdk_path=$l_JDKPATH" >> /etc/profile.d/apps-bin-path.sh
+    echo '
 if [ -n "${PATH##*${jdk_path}}" -a -n "${PATH##*${jdk_path}:*}" ]; then
    export PATH=$PATH:${jdk_path}
 fi' >> /etc/profile.d/apps-bin-path.sh
-  
+  else
+    log_msg 'cur_tools_install' " ** Adding $l_JDKPATH to path: $PATH ..."  
+  fi
 }
 
 #' ### Installation of Local Tools
@@ -215,20 +232,34 @@ fi' >> /etc/profile.d/apps-bin-path.sh
 local_tools_install () {
   local l_TOOSDIR=$1
   local l_LOCALDIR=$(echo $l_TOOSDIR | cut -d ':' -f 2)
+  local l_LOCALROOT=$(dirname "l_LOCALDIR")
   # check whether l_LOCALDIR exists
-  if [ ! -d "$l_LOCALDIR" ];then 
-    log_msg 'local_tools_install' ' ** Created $$l_LOCALDIR ...'
-    mkdir -p $l_LOCALDIR
+  if [ ! -d "$l_LOCALROOT" ];then 
+    log_msg 'local_tools_install' ' ** Created $l_LOCALROOT ...'
+    mkdir -p $l_LOCALROOT
   fi
-  log_msg 'local_tools_install' ' ** Installation of local tools from $l_TOOSDIR ...'
-  scp -r $l_TOOSDIR $l_LOCALDIR 
-  echo '
+  # check whether local dir already exists, if yes do not copy
+  if [ -d "$l_LOCALDIR" ]
+  then
+    log_msg 'local_tools_install' " ** Local tools already exists in $l_LOCALDIR"
+  else
+    log_msg 'local_tools_install' ' ** Installation of local tools from $l_TOOSDIR ...'
+    scp -r $l_TOOSDIR $l_LOCALROOT 
+  fi  
+  # add linuxBin to path, if required
+  if [ "$(grep linux_bin_path /etc/profile.d/apps-bin-path.sh | wc -l)" == "0" ]
+  then
+    log_msg 'local_tools_install' " ** Add $l_LOCALDIR to path: $PATH ..."
+    echo "
 # Adding linuxBin to path
-linux_bin_path=/qualstorzws01/data_projekte/linuxBin
+linux_bin_path=$l_LOCALDIR" >> /etc/profile.d/apps-bin-path.sh
+  echo '
 if [ -n "${PATH##*${linux_bin_path}}" -a -n "${PATH##*${linux_bin_path}:*}" ]; then
    export PATH=$PATH:${linux_bin_path}
 fi' >> /etc/profile.d/apps-bin-path.sh
-  
+  else  
+    log_msg 'local_tools_install' " ** Dir $l_LOCALDIR already found in path: $PATH ..."
+  fi
 }
 
 #' ### Rstudio Server Installation
