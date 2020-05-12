@@ -232,7 +232,7 @@ start_msg
 #+ getopts-parsing, eval=FALSE
 ZWS_GROUP=zwsgrp
 ROOT_PASSWORD=""
-ADMIN_USER="quagadmin"
+ADMIN_USER=quagadmin
 ADMIN_PASSWORD=""
 while getopts ":g:r:u:p:h" FLAG; do
   case $FLAG in
