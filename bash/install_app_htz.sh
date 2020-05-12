@@ -309,8 +309,8 @@ shiny_server_install () {
 config_nginx () {
   log_msg 'config_nginx' ' ** Generate nginx from template ...'
   # check availablility of templated
-  local l_NGINXTMPL=/home/quagadmin/source/quagzws-htz/input/nginx/n-htz_nginx.template
-  if [ ! -d "$l_NGINXTMPL" ]; then usage " * ERROR: cannot find nginx-template: $l_NGINXTMPL";fi
+  local l_NGINXTMPL='/home/quagadmin/source/quagzws-htz/input/nginx/n-htz_nginx.template'
+  if [ ! -f "$l_NGINXTMPL" ]; then usage " * ERROR: cannot find nginx-template: $l_NGINXTMPL";fi
   # generate nginx config file name from $FQDNAME
   local l_NGINXCONFIG=/etc/nginx/sites-enabled/$(echo $FQDNAME | cut -d '.' -f1)
   if [ -f "$l_NGINXCONFIG" ]
