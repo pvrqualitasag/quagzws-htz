@@ -231,20 +231,20 @@ fi' >> /etc/profile.d/apps-bin-path.sh
 #+ local-tools-install-fun
 local_tools_install () {
   local l_TOOSDIR=$1
+  local l_SRCSERVER=$(echo $l_TOOSDIR | cut -d ':' -f 1)
   local l_LOCALDIR=$(echo $l_TOOSDIR | cut -d ':' -f 2)
   local l_LOCALROOT=$(dirname "$l_LOCALDIR")
-  # check whether l_LOCALDIR exists
-  if [ ! -d "$l_LOCALROOT" ];then 
-    log_msg 'local_tools_install' " ** Created $l_LOCALROOT ..."
-    mkdir -p $l_LOCALROOT
-  fi
   # check whether local dir already exists, if yes do not copy
   if [ -d "$l_LOCALDIR" ]
   then
     log_msg 'local_tools_install' " ** Local tools already exists in $l_LOCALDIR"
   else
     log_msg 'local_tools_install' " ** Installation of local tools from $l_TOOSDIR ..."
-    scp -r $l_TOOSDIR $l_LOCALROOT 
+    # change to root to get the same path
+    curwd=$(pwd)
+    cd /
+    ssh $l_SRCSERVER "tar cvf - $l_LOCALDIR" | tar xvf -
+    cd $curwd
     log_msg 'local_tools_install' " ** Change owner of $l_LOCALROOT ..."
     chown -R quagadmin:zwsgrp $l_LOCALROOT
   fi  
