@@ -245,7 +245,7 @@ local_tools_install () {
   else
     log_msg 'local_tools_install' " ** Installation of local tools from $l_TOOSDIR ..."
     scp -r $l_TOOSDIR $l_LOCALROOT 
-    log_msg 'local_tools_install' ' ** Change owner of $l_LOCALROOT ...'
+    log_msg 'local_tools_install' " ** Change owner of $l_LOCALROOT ..."
     chown -R quagadmin:zwsgrp $l_LOCALROOT
   fi  
   # add linuxBin to path, if required
@@ -414,12 +414,12 @@ then
       # installation of a list of local apps
       cat $LOCALDIR | while read f
       do
-        log_msg "$SCRIPT" ' * Local tools installation of $f ...'
+        log_msg "$SCRIPT" " * Local tools installation of $f ..."
         local_tools_install $f
         sleep 2
       done
     else
-      log_msg "$SCRIPT" ' * Local tools installation $LOCALDIR ...'
+      log_msg "$SCRIPT" " * Local tools installation $LOCALDIR ..."
       local_tools_install $LOCALDIR
     fi  
   fi
