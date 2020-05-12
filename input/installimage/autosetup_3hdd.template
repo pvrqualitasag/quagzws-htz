@@ -20,7 +20,7 @@ HOSTNAME {FQDNAME}
 ###  Partition
 PART swap swap 4G
 PART /boot ext3 1G
-PART / ext4 2014G
+PART / ext4 2714G
 PART /var ext4 2014G
 PART /home  ext4 all
 
