@@ -232,7 +232,7 @@ fi' >> /etc/profile.d/apps-bin-path.sh
 local_tools_install () {
   local l_TOOSDIR=$1
   local l_LOCALDIR=$(echo $l_TOOSDIR | cut -d ':' -f 2)
-  local l_LOCALROOT=$(dirname "l_LOCALDIR")
+  local l_LOCALROOT=$(dirname "$l_LOCALDIR")
   # check whether l_LOCALDIR exists
   if [ ! -d "$l_LOCALROOT" ];then 
     log_msg 'local_tools_install' " ** Created $l_LOCALROOT ..."
