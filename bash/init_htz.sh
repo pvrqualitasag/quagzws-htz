@@ -183,7 +183,9 @@ install_software () {
     ufw \
     restic \
     nginx \
-    letsencrypt 
+    letsencrypt \
+    docker.io \
+    singularity-container
     
   apt update
   apt upgrade -y
