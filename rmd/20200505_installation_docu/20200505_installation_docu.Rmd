@@ -110,11 +110,29 @@ sudo su - -c'/home/quagadmin/source/quagzws-htz/bash/install_app_htz.sh -q 2-htz
 ```
 
 
-
-
-
-
 ## Generate Certificate
+Self signed certificates are generated using
+
+```
+# run as root
+sudo su -
+# this requires port 80 to be open
+letsencrypt certonly
+# answer: option 2 - e-mail - Agree - No - FQDN - webroot => /var/www/html
+# after this the certificate is placed in the specified directories
+```
+
+
+## Migrate Users
+Users can be migrated from an existing source server (1-htz) to the newly installed server. This is done using the migration script.
+
+```
+sudo su - -c'/home/quagadmin/source/quagzws-htz/bash/migrate_users.sh -u /home/quagadmin/source/quagzws-htz/input/user_admin/migrate_user.txt
+```
+
+The above call uses the reference to the credential files on the source server. The information in these files are used to generate new user accounts. 
+
+
 
 
 
