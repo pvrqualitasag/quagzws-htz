@@ -311,6 +311,8 @@ config_nginx () {
   # check availablility of templated
   local l_NGINXTMPL='/home/quagadmin/source/quagzws-htz/input/nginx/n-htz_nginx.template'
   if [ ! -f "$l_NGINXTMPL" ]; then usage " * ERROR: cannot find nginx-template: $l_NGINXTMPL";fi
+  # specify nginx default config
+  local l_NGINXCONFIGDEFAULT=/etc/nginx/sites-enabled/default
   # generate nginx config file name from $FQDNAME
   local l_NGINXCONFIG=/etc/nginx/sites-enabled/$(echo $FQDNAME | cut -d '.' -f1)
   if [ -f "$l_NGINXCONFIG" ]
@@ -320,6 +322,11 @@ config_nginx () {
     # replace placeholder in template file
     log_msg 'config_nginx' ' ** Create nginx logfile from template ...'
     cat $l_NGINXTMPL | sed -e "s/{FQDNAME}/$FQDNAME/" > $l_NGINXCONFIG
+    if [ -e "$l_NGINXCONFIGDEFAULT" ]
+    then 
+      log_msg 'config_nginx' " ** Remove default config: $l_NGINXCONFIGDEFAULT ..."
+      rm $l_NGINXCONFIGDEFAULT
+    fi  
   fi  
   # check whether referenced certificates are available
   grep ssl_certificate $l_NGINXCONFIG | cut -d ' ' -f4 | sed -e 's/;//' | while read f
