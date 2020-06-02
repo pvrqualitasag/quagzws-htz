@@ -226,18 +226,13 @@ while getopts ":e:j:m:p:q:r:s:u:w:ih" FLAG; do
       usage "Help message for $SCRIPT"
       ;;
     e)  
-      if [ -f "$OPTARG" ]
-      then
-        RESTICEXCLUDEFILE=$OPTARG
-      else
-        usage " * ERROR: Cannot find restic-job file: $OPTARG"
-      fi
+      RESTICEXCLUDEFILE=$OPTARG
       ;;
     i)
       INITRESTIC='TRUE'
       ;;
     j)
-      JOBFILE=$OPTARG
+      RESTICJOBFILE=$OPTARG
       ;;
     m)
       EMAILADDRESS=$OPTARG
