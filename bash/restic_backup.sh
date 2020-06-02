@@ -14,7 +14,10 @@
 #' The repository used by restic is directly on the sftp-server.
 #'
 #' ## Example
-#' ./restic_backup.sh -j /home/quagadmin/backup/job/restic_backup.job 
+#' # use default inputs
+#' ./restic_backup.sh -j /home/quagadmin/backup/job/restic_backup.job
+#' # read inputs from parameter file
+#' ./restic_backup.sh -p /home/quagadmin/backup/par/restic_backup.par
 #'
 #' ## Set Directives
 #' General behavior of the script is driven by the following settings
@@ -56,12 +59,14 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -j <job_file> -l <restic_log_file> -m <email_address> -r <restic_repository> -p <restic_password> -v"
-  $ECHO "  where -j <job_file>           --  specify job_file containing the sources to be backed up (optional)"
+  $ECHO "Usage: $SCRIPT -e <exclude_file> -j <job_file> -l <restic_log_file> -m <email_address> -r <restic_repository> -p <restic_password> -v"
+  $ECHO "  where -e <exclude_file>       --  specify exclude_file containing directories to be excluded (optional)"
+  $ECHO "        -j <job_file>           --  specify job_file containing the sources to be backed up (optional)"
   $ECHO "        -l <restic_log_file>    --  specify restic log file (optional)"
   $ECHO "        -m <email_address>      --  notification e-mail address (optional)"
-  $ECHO "        -r <restic_repository>  -- specify restic repository (optional)"
-  $ECHO "        -p <restic_password>    -- specify repository password (optional)"
+  $ECHO "        -p <restic_parfile>     -- specify parameterfile from where settings are read (optional)"
+  $ECHO "        -r <restic_repository>  -- specify restic repository as sftp:<username>@<sftp-host>:<repository_path> (optional)"
+  $ECHO "        -w <restic_password>    -- specify repository password (optional)"
   $ECHO "        -v                      -- verbose output (optional)"
   $ECHO ""
   exit 1
@@ -128,6 +133,16 @@ log_msg_to_logfile () {
   $ECHO "[${l_RIGHTNOW} -- ${l_CALLER}] $l_MSG" >> $RESTICLOGFILE
 }
 
+#' ### Disk Free Status
+#' Get the diskfree-status of a backup-server
+#+ df-remote-backup
+df_remote_backup () {
+ local l_REMOTE=$(echo $RESTICREPOSITORY | cut -d ':' -f2)
+ log_msg_to_logfile 'df_remote_backup' ''
+ log_msg_to_logfile 'df_remote_backup' ' *********************************** '
+ log_msg_to_logfile 'df_remote_backup' ' * Disk free status ...'
+ echo "df -h" | sftp $l_REMOTE >> $RESTICLOGFILE
+}
 
 #' ## Main Body of Script
 #' The main body of the script starts here. 
@@ -137,16 +152,26 @@ log_msg_to_logfile () {
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
-JOBFILE='/home/quagadmin/backup/job/restic_backup.job'
+JOBFILE=/home/quagadmin/backup/job/restic_backup.job
+RESTICEXCLUDEFILE=/home/quagadmin/backup/job/restic_exclude.txt
 RESTICREPOSITORY='sftp:u208153@u208153.your-backup.de:/1-htz/restic-repo'
 RESTICPASSWORD='7QRLAMNNwwPC'
 RESTICLOGFILE=/home/quagadmin/backup/log/$(date +"%Y%m%d%H%M%S"_restic_backup.log)
 EMAILADDRESS='peter.vonrohr@qualitasag.ch'
+RESTICPARFILE=/home/quagadmin/backup/par/restic_backup.par
 VERBOSE='FALSE'
-while getopts ":j:l:m:p:r:Vh" FLAG; do
+while getopts ":e:j:l:m:p:r:w:Vh" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
+      ;;
+    e)  
+      if [ -f "$OPTARG" ]
+      then
+        RESTICEXCLUDEFILE=$OPTARG
+      else
+        usage " * ERROR: Cannot find restic-job file: $OPTARG"
+      fi
       ;;
     j)
       if [ -f "$OPTARG" ]
@@ -163,10 +188,13 @@ while getopts ":j:l:m:p:r:Vh" FLAG; do
       EMAILADDRESS=$OPTARG
       ;;
     p)
-      RESTICPASSWORD=$OPTARG
+      RESTICPARFILE=$OPTARG
       ;;
     r)
       RESTICREPOSITORY=$OPTARG
+      ;;
+    w)
+      RESTICPASSWORD=$OPTARG
       ;;
     v)
       VERBOSE='TRUE'
@@ -204,8 +232,12 @@ fi
 if test "$RESTICREPOSITORY" == ""; then
   usage "-r <restic_repository> not defined"
 fi
-if test "$EMAILADDRESS" == ""; then
-  usage "-m <email_address> not defined"
+
+#' ## Read Input from Parameterfile
+#' If a parameter file is specified, the input is read from that file
+#+ read-input-from-parfile
+if [ "$RESTICPARFILE" != "" ]; then
+  source $RESTICPARFILE
 fi
 
 
@@ -223,7 +255,7 @@ cat $JOBFILE | while read job
 do
   if [ -d "$job" ]
   then
-    restic backup "$job" &>> $RESTICLOGFILE
+    restic backup --exclude-file=$RESTICEXCLUDEFILE $job &>> $RESTICLOGFILE
   else
     echo " * Cannot find path to backup source: $job" >> $RESTICLOGFILE
   fi
@@ -248,7 +280,8 @@ restic check >> $RESTICLOGFILE
 #+ df-to-log
 echo  >> $RESTICLOGFILE
 log_msg_to_logfile $SCRIPT ' * Disk free status of backup-host ...'
-/home/quagadmin/backup/bash/df_remote_backup.sh >> $RESTICLOGFILE
+df_remote_backup
+
 
 #' ## End Message to Logfile
 #' Write an end of script message to the logfile
@@ -257,11 +290,14 @@ end_msg_to_logfile
 
 #' ## E-mail Notification
 #' Send a notification containing the logfile of the backup
-(echo "To: $EMAILADDRESS";\
-echo "From: $SERVER";\
-echo "Subject: restic log from $(date)";\
-echo;\
-cat $RESTICLOGFILE ) | /usr/sbin/ssmtp $EMAILADDRESS
+if [ "$EMAILADDRESS" != "" ]
+then
+  (echo "To: $EMAILADDRESS";\
+  echo "From: $SERVER";\
+  echo "Subject: restic log from $(date)";\
+  echo;\
+  cat $RESTICLOGFILE ) | /usr/sbin/ssmtp $EMAILADDRESS
+fi
 
 #' ## End of Script
 #+ end-msg, eval=FALSE
