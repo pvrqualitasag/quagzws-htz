@@ -170,7 +170,10 @@ write_job_file () {
   do
     echo -n " * Full path of directory to be backed up [q - to quit]: "
     read l_JOB
-    echo "$l_JOB" >> $RESTICJOBFILE
+    if [ "$l_JOB" != "q" ]
+    then
+      echo "$l_JOB" >> $RESTICJOBFILE
+    fi  
   done
 }
 
@@ -184,7 +187,10 @@ write_exclude_file () {
   do
     echo -n " * Full path of directory to be backed up [q - to quit]: "
     read l_EXCLUDE
-    echo "$l_EXCLUDE" >> $RESTICEXCLUDEFILE
+    if [ "$l_EXCLUDE" != "q" ]
+    then
+      echo "$l_EXCLUDE" >> $RESTICEXCLUDEFILE
+    fi  
   done  
 }
 
