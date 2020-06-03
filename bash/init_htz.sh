@@ -134,7 +134,7 @@ add_admin_user () {
 #' this is granted with a special group.
 #+ add-zws-grp-fun
 add_zws_grp () {
-  if [ $(groups | grep $ZWS_GROUP | wc -l) == "0" ]
+  if [ $(grep "$ZWS_GROUP" /etc/group | wc -l) == "0" ]
   then
     log_msg 'add_zws_grp' " * Adding group $ZWS_GROUP"
     groupadd $ZWS_GROUP
@@ -184,7 +184,6 @@ install_software () {
     restic \
     nginx \
     letsencrypt \
-    docker.io \
     singularity-container
     
   apt update
