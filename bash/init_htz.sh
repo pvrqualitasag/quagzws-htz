@@ -144,7 +144,7 @@ add_zws_grp () {
 #' ### Install System Software
 #' The software that is used for further installation is installed
 install_software () {
-  sed -i 's/main/main restricted universe/g' /etc/apt/sources.list
+  #sed -i 's/main/main restricted universe/g' /etc/apt/sources.list
   apt update
   apt upgrade -y
 
