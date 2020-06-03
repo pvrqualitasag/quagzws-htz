@@ -270,8 +270,12 @@ fi' >> /etc/profile.d/apps-bin-path.sh
 rstudio_server_install () {
   log_msg 'rstudio_server_install' ' ** Installation of Rstudio server ...'
   # according to https://rstudio.com/products/rstudio/download-server/debian-ubuntu/
-  apt update
-  apt install -y gdebi-core
+  if [ "$(dpkg -l | grep gdebi-core | wc -l)" == "0" ]
+  then
+    log_msg 'rstudio_server_install' ' ** Install gdebi-core ...'
+    apt update
+    apt install -y gdebi-core
+  fi  
   # check whether rstudio server has already been installed
   if [ "$(service rstudio-server status 2> /dev/null | wc -l)" == "0" ]
   then
