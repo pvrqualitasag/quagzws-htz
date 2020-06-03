@@ -108,7 +108,7 @@ start_msg
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
 FQNREMOTESERVER=""
-SSHKNOWNHOSTS="/home/${USER}/.ssh/known_hosts"
+SSHKNOWNHOSTS="${HOME}/.ssh/known_hosts"
 c_example=""
 while getopts ":q:s:h" FLAG; do
   case $FLAG in
