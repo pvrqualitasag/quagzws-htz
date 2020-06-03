@@ -33,7 +33,7 @@ cat(glue::glue(s_as_tmpl), file = 'autosetup')
 
 Upload the generated autosetup to the server
 
-```{bash}
+```{bash, eval=FALSE}
 ./bash/create_autosetup.sh -q 2-htz.quagzws.com
 scp autosetup root@2-htz.quagzws.com:/
 rm autosetup
