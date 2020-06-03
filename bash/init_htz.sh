@@ -57,11 +57,12 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -r <root_password> -u <admin_user> -p <admin_password> -g <zws_group>"
+  $ECHO "Usage: $SCRIPT -r <root_password> -u <admin_user> -p <admin_password> -g <zws_group> -a <apt_pkg_file>"
   $ECHO "  where -r <root_password>   --  root password"
   $ECHO "        -u <admin_user>      --  admin user"
   $ECHO "        -p <admin_password>  --  password for admin user (optional)"
   $ECHO "        -g <zws_group>       --  additional user group (optional)"
+  $ECHO "        -a <apt_pkg_file>    --  input file with apt packages (optional)"
   $ECHO ""
   exit 1
 }
@@ -148,44 +149,13 @@ install_software () {
   apt update
   apt upgrade -y
 
-  # install softwaree properties commons for add-apt-repository
-  apt install -y software-properties-common \
-    apt-utils \
-    build-essential \
-    xserver-xorg-dev \
-    freeglut3 \
-    freeglut3-dev \
-    libopenmpi-dev \
-    openmpi-bin \
-    openmpi-common \
-    libssh-dev \
-    libssl-dev \
-    libxml2-dev \
-    libcurl4-openssl-dev \
-    libfreetype6-dev \
-    libmagick++-dev \
-    screen \
-    locales \
-    time \
-    rsync \
-    gawk \
-    tzdata \
-    git \
-    ssmtp \
-    mailutils \
-    cargo \
-    dos2unix \
-    doxygen \
-    wget \
-    sshpass \
-    htop \
-    nano \
-    ufw \
-    restic \
-    nginx \
-    letsencrypt \
-    singularity-container
-    
+  # install software given in the apt-pkg file
+  cat $APT_PKG | while read p
+  do
+    log_msg 'install_software' " * Installing package $p ..."
+    apt install -y $p
+  done
+  
   apt update
   apt upgrade -y
   
@@ -235,10 +205,14 @@ ZWS_GROUP=zwsgrp
 ROOT_PASSWORD=""
 ADMIN_USER=quagadmin
 ADMIN_PASSWORD=""
-while getopts ":g:r:u:p:h" FLAG; do
+APT_PKG=''
+while getopts ":a:g:r:u:p:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
+      ;;
+    a)
+      APT_PKG=$OPTARG
       ;;
     g)
       ZWS_GROUP=$OPTARG
@@ -273,6 +247,9 @@ fi
 if test "$ADMIN_USER" == ""; then
   usage "-u <admin_user> not defined"
 fi
+if test "$ADMIN_PASSWORD" == ""; then
+  usage "-p <admin_password> not defined"
+fi
 
 
 #' ## Change Root Password
@@ -301,8 +278,11 @@ fi
 #' ## Installation of System Programs
 #' Software that is required for further setup is installed
 #+ install-software
-log_msg $SCRIPT ' * Install system software ...'
-install_software
+if [ "$APT_PKG" != "" ]
+then
+  log_msg $SCRIPT ' * Install system software ...'
+  install_software
+fi
 
 
 #' ## Deny ssh Login for root
