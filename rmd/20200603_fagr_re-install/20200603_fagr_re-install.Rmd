@@ -1,0 +1,82 @@
+---
+title: "Re-Install of fagr"
+output: html_notebook
+---
+
+# Hetzner Rescue
+
+Submit rescue command which produces the temporary password:
+
+```
+<PASSWORD> from Hetzner robot-website
+```
+
+Then automatic reset has to be run for the server
+
+
+# Autosetup
+Generate the autosetup file
+
+```
+# generate autosetup file
+FQDN=fagr.genmon.ch
+./bash/create_autosetup.sh -q $FQDN \
+-t  /Users/pvr/Data/Projects/Github/pvrqualitasag/quagzws-htz/input/installimage/autosetup_3hdd.template
+# clear ssh known hosts
+./bash/clear_ssh_known_hosts.sh -q $FQDN
+# Upload autosetup
+scp autosetup root@${FQDN}:/
+rm autosetup
+```
+
+In a separate terminal run
+
+```
+FQDN=fagr.genmon.ch
+# ssh root@${FQDN}
+# installimage -a -c /autosetup
+# reboot
+```
+
+
+# System Software
+
+```
+FQDN=fagr.genmon.ch
+# clear ssh known hosts
+./bash/clear_ssh_known_hosts.sh -q $FQDN
+scp bash/init_htz.sh input/init_htz/fagr_apt_pkg.txt root@${FQDN}:/root
+# from the local machine
+ROOT_PASS=
+ADMIN_USER=
+ADMIN_PASS=
+ssh root@${FQDN} "/root/init_htz.sh -r $ROOT_PASS -u $ADMIN_USER -p $ADMIN_PASS -a fagr_apt_pkg.txt"
+```
+
+
+# Applications
+Installation of applications starts with cloning the repository 'quagzws-htz' to the server to be installed.
+
+```
+FQDN=fagr.genmon.ch
+./bash/clone_quagzws_htz.sh -s $FQDN
+```
+
+After each change to the repository 'quagzws-htz' must be updated on the server '$FQDN'
+
+```
+FQDN=fagr.genmon.ch
+./bash/update_quagzws_htz.sh -s $FQDN
+```
+
+
+On the server, the installation can be run as
+
+```
+FQDN=fagr.genmon.ch
+sudo su - -c"/home/quagadmin/source/quagzws-htz/bash/install_app_htz.sh -q $FQDN \
+-a /home/quagadmin/source/quagzws-htz/input/apt_pkg/apt_pkg.txt \
+-c /home/quagadmin/source/quagzws-htz/input/curl_input/curl_input.par \
+-k /home/quagadmin/source/quagzws-htz/input/apt_pkg/rkey_file.par \
+-r /home/quagadmin/source/quagzws-htz/input/r_pkg/r_pkg.txt"
+```
