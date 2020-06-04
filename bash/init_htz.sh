@@ -1,20 +1,35 @@
 #!/bin/bash
 #' ---
-#' title: Htz Remote Server Init
+#' title: Hetzner Remote Server Init
 #' date:  2020-05-05 08:50:49
 #' author: Peter von Rohr
 #' ---
 #' ## Purpose
-#' Automated setup of remote server from htz
+#' Automated setup of remote server rented from hetzner.
 #'
 #' ## Description
-#' Initial steps when installing a new remote server from htz.
+#' Initial steps when installing a new remote server from hetzner. These steps 
+#' consist of
+#' 
+#' * Changing the root-password (-r)
+#' * Adding a common user group (-g)
+#' * Adding a user as administrator (-u)
+#' * Specifying the administrator password (-p)
+#' * Installing additional software packages based on an input file (-a)
+#' * Deny ssh-access for root
+#' * Configure the firewall to only allow port 22, 80 and 443
 #'
 #' ## Details
-#' When renting a new remote server, initial steps of changing the password and creating an admin account should be automated
+#' When renting a new remote server from hetzer, the server is started into 
+#' the rescue system from the robot-website of hetzner. The rescue system 
+#' allows for the partitioning of the HDs of the server, the installation of 
+#' the basic operating system and the configuration of the basic services. This 
+#' can be done via an autosetup file. This file is generated using the script 
+#' 'create_autosetup.sh'. Once this setup is completed this initialisation 
+#' script can be uploaded to the server and executed as shown below.
 #'
 #' ## Example
-#' ./bash/init_htz.sh -r <root_password> -u <admin_user> 
+#' ./bash/init_htz.sh -r <root_password> -u <admin_user> -p <admin_password>
 #'
 #' ## Set Directives
 #' General behavior of the script is driven by the following settings
@@ -126,6 +141,11 @@ add_admin_user () {
     chmod -R 700 /root/user_admin
     # add $ADMIN_USER to sudoer
     usermod -a -G sudo $ADMIN_USER
+    # admin user is added to zws_group, if zws_grp was specified
+    if [ "$ZWS_GROUP" != "" ]
+    then
+      usermod -a -G $ZWS_GROUP $ADMIN_USER
+    fi
   fi
 
 }
@@ -201,7 +221,7 @@ start_msg
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
-ZWS_GROUP=zwsgrp
+ZWS_GROUP=''
 ROOT_PASSWORD=""
 ADMIN_USER=quagadmin
 ADMIN_PASSWORD=""
@@ -259,13 +279,6 @@ log_msg $SCRIPT ' * Change root password ...'
 change_root_password
 
 
-#' ## Add Admin User
-#' Add an admin user
-#+ add-admin-user
-log_msg $SCRIPT ' * Add admin user ...'
-add_admin_user
-
-
 #' ## Add Group for zwsgrp
 #' Add group for all members of fb-zws
 if [ "$ZWS_GROUP" != "" ]
@@ -273,6 +286,13 @@ then
   log_msg $SCRIPT ' * Add zws group ...'
   add_zws_grp
 fi
+
+
+#' ## Add Admin User
+#' Add an admin user
+#+ add-admin-user
+log_msg $SCRIPT ' * Add admin user ...'
+add_admin_user
 
 
 #' ## Installation of System Programs
