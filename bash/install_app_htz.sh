@@ -32,7 +32,12 @@
 #' else
 #'   git -C $QHTZDIR pull
 #' fi
-#' sudo su - -c "$QHTZDIR/bash/install_app_htz.sh"
+#' sudo su - -c "$QHTZDIR/bash/install_app_htz.sh -q <host_name> \
+#' -a /home/quagadmin/source/quagzws-htz/input/apt_pkg/apt_pkg.txt \
+#' -c /home/quagadmin/source/quagzws-htz/input/curl_input/curl_input.par \
+#' -k /home/quagadmin/source/quagzws-htz/input/apt_pkg/rkey_file.par \
+#' -l /home/quagadmin/source/quagzws-htz/input/local_app/local_app.txt \
+#' -r /home/quagadmin/source/quagzws-htz/input/r_pkg/r_pkg.txt"
 #'
 #' ## Set Directives
 #' General behavior of the script is driven by the following settings
@@ -75,13 +80,13 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -q <server_fqdname> -l <local_app_dir> -m <install_mode>"
-  $ECHO "  where -q <server_fqdname>  --  FQDNAME of server to be configured"
+  $ECHO "Usage: $SCRIPT -a <apt_pkg_file> -c <curl_input> -k <r_key_file> -l <local_app_dir> -m <install_mode> -q <server_fqdname> -r <r_pkg_file>"
+  $ECHO "  where -a <apt_pkg_file>    --  file with apt-pkg to be installed (optional)"
+  $ECHO "        -c <curl_input>      --  input specifying curl-based installations (optional)"
+  $ECHO "        -k <r_key_file>      --  file with r ubuntu repo key (optional)"
   $ECHO "        -l <local_app_dir>   --  remote directory including username usable with scp to be copied to new server (optional)"
   $ECHO "        -m <install_mode>    --  installation mode to selectively install only parts of the applications (optional)"
-  $ECHO "        -a <apt_pkg_file>    --  file with apt-pkg to be installed (optional)"
-  $ECHO "        -c <curl_input>      --  input specifying curl-based installations (optional)"
-  $ECHO "        -k <r_key_file       --  file with r ubuntu repo key (optional)"
+  $ECHO "        -q <server_fqdname>  --  FQDNAME of server to be configured"
   $ECHO "        -r <r_pkg_file>      --  file with r-packages to be installed (optional)"
   $ECHO ""
   exit 1
