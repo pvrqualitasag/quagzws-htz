@@ -176,7 +176,7 @@ apt_tools_install () {
       do
         log_msg 'apt_tools_install' " ** Install r-pgk: $rpkg ..."
         R -e "if (! '$rpkg' %in% installed.packages()) {
-          cat(' *** R: install.package: ', $rpkg, '\n')
+          cat(' *** R: install.package: $rpkg \n')
           install.packages('$rpkg', repos='https://cran.rstudio.com/', dependencies = TRUE)}"
       done
     fi
