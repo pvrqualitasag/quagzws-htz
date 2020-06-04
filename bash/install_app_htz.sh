@@ -196,49 +196,111 @@ apt_tools_install () {
 #' are added to the path such that they can be used without specifying the path.
 #+ curl-tools-install-fun
 curl_tools_install () {
-  log_msg 'curl_tools_install' ' ** Install julia ...'
-  # Install jula from download-host
-  curl -sSL "https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.1-linux-x86_64.tar.gz" > julia.tar.gz 
-  mkdir -p /opt/julia 
-  tar -C /opt/julia -zxf julia.tar.gz 
-  rm -f julia.tar.gz
-  # define julia path
-  local l_JULIAPATH='/opt/julia/julia-1.1.1/bin'
-  # check whether julia must be added to path
-  if [ "$(grep julia_path /etc/profile.d/apps-bin-path.sh | wc -l)" == "0" ]
+  # initialise variables
+  JULIA_URL=''
+  JULIA_ROOT=''
+  JULIA_PATH=''
+  JDK_URL=''
+  JDK_ROOT=''
+  JDK_PATH=''
+  SIMG_URL=''
+  # source the input file
+  source $CURLINPUT
+  # check whether julia must be installed
+  if [ "$JULIA_URL" != "" ] && [ "$JULIA_ROOT" != "" ] && [ "$JULIA_PATH" != "" ]
   then
-    log_msg 'curl_tools_install' " ** Adding $l_JULIAPATH to path: $PATH ..."
-    echo "
+    log_msg 'curl_tools_install' ' ** Install julia ...'
+    # Install jula from download-host
+    curl -sSL "$JULIA_URL" > julia.tar.gz 
+    if [ ! -d "$JULIA_ROOT" ];then mkdir -p $JULIA_ROOT;fi
+    tar -C $JULIA_ROOT -zxf julia.tar.gz 
+    rm -f julia.tar.gz
+    # define julia path
+    local l_JULIAPATH=$JULIA_PATH
+    # check whether julia must be added to path
+    if [ "$(grep julia_path /etc/profile.d/apps-bin-path.sh | wc -l)" == "0" ]
+    then
+      log_msg 'curl_tools_install' " ** Adding $l_JULIAPATH to path: $PATH ..."
+      echo "
 # Adding julia to path
 julia_path=$l_JULIAPATH" >> /etc/profile.d/apps-bin-path.sh
-    echo '
+      echo '
 if [ -n "${PATH##*${julia_path}}" -a -n "${PATH##*${julia_path}:*}" ]; then
    export PATH=$PATH:${julia_path}
 fi' >> /etc/profile.d/apps-bin-path.sh
-  else
-    log_msg 'curl_tools_install' " ** Dir $l_JULIAPATH already in path: $PATH ..."
+    else
+      log_msg 'curl_tools_install' " ** Dir $l_JULIAPATH already in path: $PATH ..."
+    fi
   fi
-  log_msg 'curl_tools_install' ' ** Install openjdk8 ...'
-  # install OpenJDK 8 (LTS) from https://adoptopenjdk.net
-  curl -sSL "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u222-b10/OpenJDK8U-jdk_x64_linux_hotspot_8u222b10.tar.gz" > openjdk8.tar.gz
-  mkdir -p /opt/openjdk
-  tar -C /opt/openjdk -xf openjdk8.tar.gz
-  rm -f openjdk8.tar.gz
-  # Assign jdk
-  local l_JDKPATH='/opt/openjdk/jdk8u222-b10/bin'
-  # Check whether jdk must be added to path
-  if [ "$(grep jdk_path /etc/profile.d/apps-bin-path.sh | wc -l)" == "0" ]
+  
+  # check whether jdk must be installed
+  if [ "$JDK_URL" != "" ] && [ "$JDK_ROOT" != "" ] && [ "$JDK_PATH" != "" ]
   then
-    log_msg 'cur_tools_install' " ** Adding $l_JDKPATH to path: $PATH ..."
-    echo "
+    log_msg 'curl_tools_install' ' ** Install openjdk8 ...'
+    # install OpenJDK 8 (LTS) from https://adoptopenjdk.net
+    curl -sSL "$JDK_URL" > openjdk8.tar.gz
+    if [ ! -d "$JDK_ROOT" ];then mkdir -p ${JDK_ROOT};fi
+    tar -C $JDK_ROOT -xf openjdk8.tar.gz
+    rm -f openjdk8.tar.gz
+    # Assign jdk
+    local l_JDKPATH=$JDK_PATH
+    # Check whether jdk must be added to path
+    if [ "$(grep jdk_path /etc/profile.d/apps-bin-path.sh | wc -l)" == "0" ]
+    then
+      log_msg 'cur_tools_install' " ** Adding $l_JDKPATH to path: $PATH ..."
+      echo "
 # Adding jdk to path
 jdk_path=$l_JDKPATH" >> /etc/profile.d/apps-bin-path.sh
-    echo '
+      echo '
 if [ -n "${PATH##*${jdk_path}}" -a -n "${PATH##*${jdk_path}:*}" ]; then
    export PATH=$PATH:${jdk_path}
 fi' >> /etc/profile.d/apps-bin-path.sh
-  else
-    log_msg 'cur_tools_install' " ** Adding $l_JDKPATH to path: $PATH ..."  
+    else
+      log_msg 'cur_tools_install' " ** Dir $l_JDKPATH already in path: $PATH ..."  
+    fi
+  fi  
+  
+  # check whether to install go
+    if [ "$GO_URL" != "" ] && [ "$GO_ROOT" != "" ] && [ "$GO_PATH" != "" ]
+  then
+    log_msg 'curl_tools_install' ' ** Install go ...'
+    # install go from $GO_URL
+    curl -sSL "$GO_URL" > go.tar.gz
+    if [ ! -d "$GO_ROOT" ];then mkdir -p ${GO_ROOT};fi
+    tar -C $GO_ROOT -xf go.tar.gz
+    rm -f go.tar.gz
+    # Assign jdk
+    local l_GOPATH=$GO_PATH
+    # Check whether GO must be added to path
+    if [ "$(grep go_path /etc/profile.d/apps-bin-path.sh | wc -l)" == "0" ]
+    then
+      log_msg 'cur_tools_install' " ** Adding $l_GOPATH to path: $PATH ..."
+      echo "
+# Adding GO to path
+go_path=$l_GOPATH" >> /etc/profile.d/apps-bin-path.sh
+      echo '
+if [ -n "${PATH##*${go_path}}" -a -n "${PATH##*${go_path}:*}" ]; then
+   export PATH=$PATH:${go_path}
+fi' >> /etc/profile.d/apps-bin-path.sh
+    else
+      log_msg 'cur_tools_install' " ** Dir $l_GOPATH already in path: $PATH ..."  
+    fi
+  fi  
+  
+  # check whether simg is to be installed
+  if [ "$SIMG_URL" != "" ]
+  then
+    log_msg 'curl_tools_install' ' ** Install singularity-container ...'
+    SIMG_DEB=$(basename $SIMG_URL)
+    curl -sSL "$SIMG_URL" > $SIMG_DEB
+    # check whether gdebi-core is available
+    if [ "$(dpkg --list | grep gdebi-core | wc -l)" == "0" ]
+    then
+      apt-get update -y
+      apt-get install -y gdebi-core
+    fi
+    gdebi --n $SIMG_DEB
+    rm -rf $SIMG_DEB
   fi
 }
 
@@ -439,11 +501,15 @@ then
 fi
 
 #' ## Curl-based Tools
-#' Tools not available in an ubuntu repository are downloaded and installed.
+#' Tools not available in an ubuntu repository are downloaded and installed, 
+#' if an input file is specified.
 if [ "$INSTALLMODE" == 'all' ] || [ "$INSTALLMODE" == 'curl' ]
 then
-  log_msg "$SCRIPT" ' * Curl tools installation ...'
-  curl_tools_install
+  if [ "$CURLINPUT" != "" ]
+  then
+    log_msg "$SCRIPT" ' * Curl tools installation ...'
+    curl_tools_install
+  fi
 fi
 
 #' ## Local Tools Installation
