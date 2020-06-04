@@ -442,7 +442,7 @@ RPKGFILE=''
 FQDNAME=''
 LOCALDIR=''
 INSTALLMODE='all'
-while getopts ":l:m:q:h" FLAG; do
+while getopts ":a:c:k:l:m:q:r:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
