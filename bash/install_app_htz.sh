@@ -79,6 +79,10 @@ usage () {
   $ECHO "  where -q <server_fqdname>  --  FQDNAME of server to be configured"
   $ECHO "        -l <local_app_dir>   --  remote directory including username usable with scp to be copied to new server (optional)"
   $ECHO "        -m <install_mode>    --  installation mode to selectively install only parts of the applications (optional)"
+  $ECHO "        -a <apt_pkg_file>    --  file with apt-pkg to be installed (optional)"
+  $ECHO "        -c <curl_input>      --  input specifying curl-based installations (optional)"
+  $ECHO "        -k <r_key_file       --  file with r ubuntu repo key (optional)"
+  $ECHO "        -r <r_pkg_file>      --  file with r-packages to be installed (optional)"
   $ECHO ""
   exit 1
 }
@@ -120,57 +124,70 @@ log_msg () {
 #' installed in the following function.
 #+ apt-tools-install-fun
 apt_tools_install () {
-  # start with an updata/upgrade of the existing system
-  apt update
-  apt upgrade -y
+  # install additional tools, if the input file is specified
+  if [ "$APTPKGFILE" != "" ]
+  then
+    # start with an updata/upgrade of the existing system
+    apt update
+    apt upgrade -y
   
-  log_msg 'apt_tools_install' ' ** Add key and repo for R'
-  # add key and repository for R
-  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 
-  add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
-  apt update
+    # check whether r-base is to be installed
+    if [ "$(grep r-base $APTPKGFILE | wc -l)" != "0" ]
+    then
+      log_msg 'apt_tools_install' ' ** Add key and repo for R'
+      # default settings
+      KEYSERVER=keyserver.ubuntu.com
+      RECVKEY=E298A3A825C0D65DFD57CBB651716619E084DAB9
+      REPO='deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
+      # read input from file, if it exists
+      if [ "$RKEYFILE" != "" ]
+      then
+        source $RKEYFILE
+      fi  
+      # add key and repository for R
+      apt-key adv --keyserver $KEYSERVER --recv-keys $RECVKEY
+      add-apt-repository $REPO
+      apt update
+    fi
 
-  log_msg 'apt_tools_install' ' ** Install R, python and co ...'
-  # install R, python and co.
-  apt install -y r-base r-base-core r-recommended python python-pip python-numpy python-pandas python-dev python3-pip pandoc gnuplot 
-  apt update
-  apt upgrade -y
+    log_msg 'apt_tools_install' ' ** Install R, python and co ...'
+    # install R, python and co.
+    cat $APTPKGFILE | while read p
+    do
+      log_msg 'apt_tools_install' " ** Installing pkg $p ..."
+      apt install -y $p
+    done  
+    apt update
+    apt upgrade -y
+  fi
   
-  log_msg 'apt_tools_install' ' ** Install R packages'
-  R -e "install.packages(c('devtools', \
-'remotes', \
-'BiocManager', \
-'doParallel', \
-'e1071', \
-'foreach', \
-'gridExtra', \
-'MASS', \
-'plyr', \
-'dplyr', \
-'stringdist', \
-'rmarkdown', \
-'knitr', \
-'tinytex', \
-'openxlsx', \
-'LaF', \
-'reshape2', \
-'data.table', \
-'bit64', \
-'tidyverse', \
-'cowplot', \
-'qqman', \
-'svglite', \
-'olsrr', \
-'formatR', \
-'pedigreemm', \
-'xtable', \
-'glmnet', \
-'ISLR'), repos='https://cran.rstudio.com/', dependencies = TRUE)"
-  
-  log_msg 'apt_tools_install' ' ** Install pandas and numpy ...'
-  # use pip to get numpy and pandas for py3
-  /usr/bin/pip3 install pandas
-  /usr/bin/pip3 install numpy
+  # install R packages, if R is available and if input file is specified
+  if [ "$RPKGFILE" != "" ]
+  then
+    # check whether R is installed
+    if [ "$(which R | wc -l)" == "0" ]
+    then
+      log_msg 'apt_tools_install' " ** Cannot find R and therefore cannot install r-packages from $RPKGFILE"
+    else
+      cat $RPKGFILE | while read rpkg
+      do
+        log_msg 'apt_tools_install' " ** Install r-pgk: $rpkg ..."
+        R -e "if (! '$rpkg' %in% installed.packages()) {
+          cat(' *** R: install.package: ', $rpkg, '\n')
+          install.packages('$rpkg', repos='https://cran.rstudio.com/', dependencies = TRUE)}"
+      done
+    fi
+  fi
+
+  # check whether pip3 has been installed already
+  PIP3PATH=/usr/bin/pip3
+  if [ -f "$PIP3PATH" ]
+  then
+    log_msg 'apt_tools_install' ' ** Install pandas and numpy ...'
+    # use pip to get numpy and pandas for py3
+    $PIP3PATH install pandas
+    $PIP3PATH install numpy
+  fi
   
 }
 
@@ -356,13 +373,26 @@ start_msg
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
-FQDNAME=""
-LOCALDIR=""
+APTPKGFILE=''
+CURLINPUT=''
+RKEYFILE=''
+RPKGFILE=''
+FQDNAME=''
+LOCALDIR=''
 INSTALLMODE='all'
 while getopts ":l:m:q:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
+      ;;
+    a)
+      APTPKGFILE=$OPTARG
+      ;;
+    c)
+      CURLINPUT=$OPTARG
+      ;;
+    k)
+      RKEYFILE=$OPTARG
       ;;
     l)
       LOCALDIR=$OPTARG
@@ -372,6 +402,9 @@ while getopts ":l:m:q:h" FLAG; do
       ;;
     q)
       FQDNAME=$OPTARG
+      ;;
+    r)
+      RPKGFILE=$OPTARG
       ;;
     :)
       usage "-$OPTARG requires an argument"

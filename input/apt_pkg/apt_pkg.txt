@@ -1,0 +1,11 @@
+r-base 
+r-base-core 
+r-recommended 
+python 
+python-pip 
+python-numpy 
+python-pandas 
+python-dev 
+python3-pip 
+pandoc 
+gnuplot

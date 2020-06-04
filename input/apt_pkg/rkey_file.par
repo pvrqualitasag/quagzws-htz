@@ -1,0 +1,4 @@
+KEYSERVER=keyserver.ubuntu.com
+RECVKEY=E298A3A825C0D65DFD57CBB651716619E084DAB9
+REPO='deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
+      
