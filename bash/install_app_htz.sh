@@ -142,11 +142,14 @@ apt_tools_install () {
       # read input from file, if it exists
       if [ "$RKEYFILE" != "" ]
       then
+        log_msg 'apt_tools_install' " ** Sourcing rkey_file: $RKEYFILE ... "
         source $RKEYFILE
       fi  
       # add key and repository for R
+      log_msg 'apt_tools_install' " ** Specify keyserver: $KEYSERVER with key: $RECVKEY ... "
       apt-key adv --keyserver $KEYSERVER --recv-keys $RECVKEY
-      add-apt-repository $REPO
+      log_msg 'apt_tools_install' " ** Adding repository: $REPO ... "
+      add-apt-repository "$REPO"
       apt update
     fi
 
