@@ -154,10 +154,10 @@ df_remote_backup () {
 #+ getopts-parsing, eval=FALSE
 JOBFILE=/home/quagadmin/backup/job/restic_backup.job
 RESTICEXCLUDEFILE=/home/quagadmin/backup/job/restic_exclude.txt
-RESTICREPOSITORY='sftp:u208153@u208153.your-backup.de:/1-htz/restic-repo'
-RESTICPASSWORD='7QRLAMNNwwPC'
+RESTICREPOSITORY=''
+RESTICPASSWORD=''
 RESTICLOGFILE=/home/quagadmin/backup/log/$(date +"%Y%m%d%H%M%S"_restic_backup.log)
-EMAILADDRESS='peter.vonrohr@qualitasag.ch'
+EMAILADDRESS=''
 RESTICPARFILE=/home/quagadmin/backup/par/restic_backup.par
 VERBOSE='FALSE'
 while getopts ":e:j:l:m:p:r:w:Vh" FLAG; do
