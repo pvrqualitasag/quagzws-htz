@@ -268,7 +268,7 @@ done
 echo >> $RESTICLOGFILE
 log_msg_to_logfile $SCRIPT ' * List of snapshots ...'
 restic snapshots > tmp_restic_snapshots.txt
-if [ `wc -l bash/init_restic_backup.sh | awk {'print $1'}` -gt 100 ]
+if [ `cat tmp_restic_snapshots.txt | wc -l` -gt 100 ]
 then
   head -50 tmp_restic_snapshots.txt >> $RESTICLOGFILE
   tail -50 tmp_restic_snapshots.txt >> $RESTICLOGFILE
