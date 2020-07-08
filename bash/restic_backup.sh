@@ -216,6 +216,14 @@ shift $((OPTIND-1))  #This tells getopts to move on to the next argument.
 if [ "$VERBOSE" == "TRUE" ];then start_msg; fi
 start_msg_to_logfile
 
+
+#' ## Read Input from Parameterfile
+#' If a parameter file is specified, the input is read from that file
+#+ read-input-from-parfile
+if [ "$RESTICPARFILE" != "" ]; then
+  source $RESTICPARFILE
+fi
+
 #' ## Checks for Command Line Arguments
 #' The following statements are used to check whether required arguments
 #' have been assigned with a non-empty value
@@ -231,13 +239,6 @@ if test "$RESTICPASSWORD" == ""; then
 fi
 if test "$RESTICREPOSITORY" == ""; then
   usage "-r <restic_repository> not defined"
-fi
-
-#' ## Read Input from Parameterfile
-#' If a parameter file is specified, the input is read from that file
-#+ read-input-from-parfile
-if [ "$RESTICPARFILE" != "" ]; then
-  source $RESTICPARFILE
 fi
 
 
