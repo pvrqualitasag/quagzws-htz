@@ -267,7 +267,15 @@ done
 #+ write-snapshots-to-log
 echo >> $RESTICLOGFILE
 log_msg_to_logfile $SCRIPT ' * List of snapshots ...'
-restic snapshots >> $RESTICLOGFILE
+restic snapshots > tmp_restic_snapshots.txt
+if [ `wc -l bash/init_restic_backup.sh | awk {'print $1'}` -gt 100 ]
+then
+  head -50 tmp_restic_snapshots.txt >> $RESTICLOGFILE
+  tail -50 tmp_restic_snapshots.txt >> $RESTICLOGFILE
+else
+  cat tmp_restic_snapshots.txt >> $RESTICLOGFILE
+fi
+rm -rf tmp_restic_snapshots.txt
 
 #' ## Check Backup Data Integrety
 #' The integrety of the backup data is checked and the result is written to the logfile
