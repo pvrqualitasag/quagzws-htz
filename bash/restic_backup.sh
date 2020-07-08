@@ -256,7 +256,11 @@ cat $JOBFILE | while read job
 do
   if [ -d "$job" ]
   then
-    restic backup --exclude-file=$RESTICEXCLUDEFILE $job &>> $RESTICLOGFILE
+    if [ "$RESTICEXCLUDEFILE" != '' ] && [ -f "$RESTICEXCLUDEFILE" ]
+      restic backup --exclude-file=$RESTICEXCLUDEFILE $job &>> $RESTICLOGFILE
+    else
+      restic backup $job &>> $RESTICLOGFILE
+    fi
   else
     echo " * Cannot find path to backup source: $job" >> $RESTICLOGFILE
   fi
