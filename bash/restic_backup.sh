@@ -257,6 +257,7 @@ do
   if [ -d "$job" ]
   then
     if [ "$RESTICEXCLUDEFILE" != '' ] && [ -f "$RESTICEXCLUDEFILE" ]
+    then
       restic backup --exclude-file=$RESTICEXCLUDEFILE $job &>> $RESTICLOGFILE
     else
       restic backup $job &>> $RESTICLOGFILE
