@@ -116,6 +116,7 @@ check_exist_dir_create () {
 
 #' ### Determine Snapshot ID
 #' The ID of the most recent snapshot for the directory to be restored is searched
+#+ get-latest-snapshot-id-fun
 get_latest_snapshot_id () {
   local l_restore_dir=$1
   log_msg 'get_latest_snapshot_id' " ** Determine id of most recent snapshot for $l_restore_dir ..."
@@ -123,11 +124,32 @@ get_latest_snapshot_id () {
   log_msg 'get_latest_snapshot_id' " ** Snapshot ID: $RESTICSNAPSHOTID ..."
 }
 
+#' ### Check For Root
+#' Check whether script is run by root
+#+ check-run-as-root-fun
+check_run_as_root () {
+  log_msg 'check_run_as_root' ' ** Check whether script is run by root ...'
+  if [ `whoami | grep root | wc -l` == '1' ]
+  then
+    log_msg 'check_run_as_root' ' ** OK running as root ...'
+  else
+    log_msg 'check_run_as_root' ' ** Not running as root -- stop...'
+    usage ' ERROR: Script can only run as root'
+  
+  fi
+}
 
 #' ## Main Body of Script
 #' The main body of the script starts here.
 #+ start-msg, eval=FALSE
 start_msg
+
+
+#' ## Check For Root
+#' This script must be run as root, hence, we check, if not stop
+#+ check-run-as-root
+check_run_as_root
+
 
 #' ## Getopts for Commandline Argument Parsing
 #' If an option should be followed by an argument, it should be followed by a ":".
