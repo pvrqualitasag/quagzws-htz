@@ -59,15 +59,15 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -e <exclude_file> -j <job_file> -l <restic_log_file> -m <email_address> -r <restic_repository> -p <restic_password> -v"
-  $ECHO "  where -e <exclude_file>       --  specify exclude_file containing directories to be excluded (optional)"
-  $ECHO "        -j <job_file>           --  specify job_file containing the sources to be backed up (optional)"
-  $ECHO "        -l <restic_log_file>    --  specify restic log file (optional)"
-  $ECHO "        -m <email_address>      --  notification e-mail address (optional)"
-  $ECHO "        -p <restic_parfile>     -- specify parameterfile from where settings are read (optional)"
+  $ECHO "Usage: $SCRIPT -e <exclude_file> -j <job_file> -l <restic_log_file> -m <email_address> -r <restic_repository> -p <restic_password> -r <restic_repository> -w <restic_password> -v"
+  $ECHO "  where -e <exclude_file>       --  specify exclude_file containing directories to be excluded                (optional)"
+  $ECHO "        -j <job_file>           --  specify job_file containing the sources to be backed up                   (optional)"
+  $ECHO "        -l <restic_log_file>    --  specify restic log file                                                   (optional)"
+  $ECHO "        -m <email_address>      --  notification e-mail address                                               (optional)"
+  $ECHO "        -p <restic_parfile>     -- specify parameterfile from where settings are read                         (optional)"
   $ECHO "        -r <restic_repository>  -- specify restic repository as sftp:<username>@<sftp-host>:<repository_path> (optional)"
-  $ECHO "        -w <restic_password>    -- specify repository password (optional)"
-  $ECHO "        -v                      -- verbose output (optional)"
+  $ECHO "        -w <restic_password>    -- specify repository password                                                (optional)"
+  $ECHO "        -v                      -- verbose output                                                             (optional)"
   $ECHO ""
   exit 1
 }
