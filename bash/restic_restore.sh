@@ -5,16 +5,16 @@
 #' author: Peter von Rohr
 #' ---
 #' ## Purpose
-#' Seamless restore process from backup data {Write a paragraph about what problems are solved with this script.}
+#' Seamless restore process from backup data
 #'
 #' ## Description
-#' Restore data from a restic backup repository into a target directory. {Write a paragraph about how the problems are solved.}
+#' Restore data from a restic backup repository into a target directory. 
 #'
 #' ## Details
-#' Given the input from the command-line or from a parameter-file containing the required input for the restore process. {Give some more details here.}
+#' Given the input from the command-line or from a parameter-file containing the required input for the restore process.
 #'
 #' ## Example
-#' ./restic_restore.sh -p <parameter_file> -s <source_data> -t <restore_target> {Specify an example call of the script.}
+#' ./restic_restore.sh -p <parameter_file> -s <source_data> -t <restore_target> 
 #'
 #' ## Set Directives
 #' General behavior of the script is driven by the following settings
