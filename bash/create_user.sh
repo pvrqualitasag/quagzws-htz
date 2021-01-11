@@ -213,6 +213,7 @@ if [ "$PASSWORD" == "" ]
 then
   log_msg "$SCRIPT" " * Password not specified - generate one ..."
   generate_password
+  log_msg "$SCRIPT" " * Generated password: $PASSWORD ..."
 else
   log_msg "$SCRIPT" " * Use specified password ..."
 fi
