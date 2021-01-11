@@ -157,7 +157,7 @@ start_msg
 #+ getopts-parsing, eval=FALSE
 ADDUGROUP=""
 OUTPUTDIR=/home/quagadmin/user_admin/created
-PASSWORD=""
+PASSWORD=`tr -dc A-Za-z0-9_ < /dev/urandom | head -c8`
 USERNAME=""
 DEFAULTSHELL=/bin/bash
 while getopts ":g:o:p:u:s:h" FLAG; do
@@ -211,11 +211,7 @@ fi
 #+ check-password
 if [ "$PASSWORD" == "" ]
 then
-  log_msg "$SCRIPT" " * Password not specified - generate one ..."
-  generate_password
-  log_msg "$SCRIPT" " * Generated password: $PASSWORD ..."
-else
-  log_msg "$SCRIPT" " * Use specified password ..."
+  usage " -p <password> Password not specified"
 fi
 
 
