@@ -120,11 +120,11 @@ create_user () {
    
   # add user account
   log_msg 'create_user' " ** Create account for user: $l_USERNAME ..."
-  useradd $l_USERNAME -s $l_DEFAULTSHELL -m
+  sudo useradd $l_USERNAME -s $l_DEFAULTSHELL -m
 
   # This will actually set the password:
   log_msg 'create_user' " ** Set password for user: $l_USERNAME ..."
-  echo "$l_USERNAME:$l_PASS" | chpasswd  
+  echo "$l_USERNAME:$l_PASS" | sudo chpasswd  
   
   # check whether outputdir exists
   if [ ! -d "$OUTPUTDIR" ]
@@ -144,7 +144,7 @@ create_user () {
 add_user_to_grp () {
   local l_grp=$1
   local l_user=$2
-  usermod -a -G $l_grp $l_user
+  sudo usermod -a -G $l_grp $l_user
   
 } 
 
@@ -190,7 +190,7 @@ check_for_sudoer
 #+ getopts-parsing, eval=FALSE
 ADDUGROUP=""
 OUTPUTDIR=/home/quagadmin/user_admin/created
-PASSWORD=$(tr -dc A-Za-z0-9_ < /dev/urandom | head -c8)
+PASSWORD=`tr -dc A-Za-z0-9_ < /dev/urandom | head -c8`
 USERNAME=""
 DEFAULTSHELL=/bin/bash
 while getopts ":g:o:p:u:s:h" FLAG; do
