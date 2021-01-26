@@ -181,7 +181,7 @@ start_msg
 #' we have to check, whether the script is run as root.
 #+ check-for-root-call
 #check_for_root
-check_for_sudo
+check_for_sudoer
 
 #' ## Getopts for Commandline Argument Parsing
 #' If an option should be followed by an argument, it should be followed by a ":".
