@@ -258,8 +258,11 @@ create_user $USERNAME $PASSWORD $DEFAULTSHELL
 #' If specified the user is added to a user group
 if [ "$ADDUGROUP" != "" ]
 then
-  log_msg "$SCRIPT" " * Add user to group: $ADDUGROUP ..."
-  add_user_to_grp $ADDUGROUP $USERNAME
+  echo $ADDUGROUP | sed -e "s|;|\n|" while read g
+  do
+    log_msg "$SCRIPT" " * Add user to group: $g ..."
+    add_user_to_grp $g $USERNAME
+  done  
 fi
 
 #' ## End of Script
