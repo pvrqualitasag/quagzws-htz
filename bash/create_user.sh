@@ -165,7 +165,7 @@ check_for_root () {
 check_for_sudoer () {
   local l_CURUSR=$(whoami)
   # is $l_CURUSR in group sudo
-  if [ $(groups $l_CURUSR | grep sudo | wc -l) le 1 ]
+  if [ $(groups $l_CURUSR | grep sudo | wc -l) -ne 1 ]
   then
    usage " *** ERROR: script must be run as user that is in group sudo, not true for user: $l_CURUSR"
   fi
