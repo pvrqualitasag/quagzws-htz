@@ -159,6 +159,18 @@ check_for_root () {
   fi
 }
 
+#' ### Check For Sudoer User
+#' Check whether the current user is in the group sudo
+#+ check-for-sudo-fun
+check_for_sudoer () {
+  local l_CURUSR=$(whoami)
+  # is $l_CURUSR in group sudo
+  if [ $(groups $l_CURUSR | grep sudo | wc -l) le 1 ]
+  then
+   usage " *** ERROR: script must be run as user that is in group sudo, not true for user: $l_CURUSR"
+  fi
+}
+
 #' ## Main Body of Script
 #' The main body of the script starts here.
 #+ start-msg, eval=FALSE
@@ -168,7 +180,8 @@ start_msg
 #' This script contains calls to scripts that can only be run by root, hence 
 #' we have to check, whether the script is run as root.
 #+ check-for-root-call
-check_for_root
+#check_for_root
+check_for_sudo
 
 #' ## Getopts for Commandline Argument Parsing
 #' If an option should be followed by an argument, it should be followed by a ":".
