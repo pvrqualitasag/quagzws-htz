@@ -190,7 +190,7 @@ check_for_sudoer
 #+ getopts-parsing, eval=FALSE
 ADDUGROUP=""
 OUTPUTDIR=/home/quagadmin/user_admin/created
-PASSWORD=`tr -dc A-Za-z0-9_ < /dev/urandom | head -c8`
+PASSWORD='' #`tr -dc A-Za-z0-9_ < /dev/urandom | head -c8`
 USERNAME=""
 DEFAULTSHELL=/bin/bash
 while getopts ":g:o:p:u:s:h" FLAG; do
