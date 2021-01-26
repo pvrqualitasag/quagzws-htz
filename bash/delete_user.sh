@@ -180,7 +180,7 @@ delete_user $USERNAME
 if [ -e "$USERHOME" ]
 then
   echo "Delete home directory of $USERNAME ..." 
-  rm -rf $USERHOME
+  sudo rm -rf $USERHOME
 fi
 
 
