@@ -8,10 +8,13 @@
 #' Seamless creation of user account on a linux machine.
 #'
 #' ## Description
-#' Create new user on the local machine. 
+#' Create new user on the local machine. The user must be specified by the username. 
+#' The password, the default shell and additional usergroups can be specified via 
+#' commandline arguments. In case a user should be added to multiple groups, they 
+#' can be separated via semi-colon.
 #'
 #' ## Details
-#' This script must be run as root.
+#' This script must be run as root. This is checked at the beginning of the script.
 #'
 #' ## Example
 #' ./create_user.sh -u <user> -p <password> -s <default_shell> -g <additional_group>
@@ -59,9 +62,9 @@ usage () {
   $ECHO "Usage Error: $l_MSG"
   $ECHO "Usage: $SCRIPT -u <user> -p <password> -s <default_shell> -g <additional_group>"
   $ECHO "  where -u <user>              --  username"
-  $ECHO "        -p <password>          --  password(optional)"
-  $ECHO "        -s <default_shell>     --  specify default shell to be used (optional)"
-  $ECHO "        -g <additional_group>  --  additional user group to which user should be added (optional)"
+  $ECHO "        -p <password>          --  (optional) password"
+  $ECHO "        -s <default_shell>     --  (optional) specify default shell to be used"
+  $ECHO "        -g <additional_group>  --  (optional) additional user group to which user should be added, multiple groups can be separated by semi-colon"
   $ECHO ""
   exit 1
 }
@@ -143,12 +146,29 @@ add_user_to_grp () {
   local l_user=$2
   usermod -a -G $l_grp $l_user
   
+} 
+
+#' ### Check For Root
+#' Check whether we are running this script as root
+#+ check-for-root-fun
+check_for_root () {
+  local l_CURUSR=$(whoami)
+  if [ "$l_CURUSR" != 'root' ]
+  then
+    usage " *** ERROR: script must be run as root, not as user: $l_CURUSR"
+  fi
 }
 
 #' ## Main Body of Script
 #' The main body of the script starts here.
 #+ start-msg, eval=FALSE
 start_msg
+
+#' ## Check for User Root
+#' This script contains calls to scripts that can only be run by root, hence 
+#' we have to check, whether the script is run as root.
+#+ check-for-root-call
+check_for_root
 
 #' ## Getopts for Commandline Argument Parsing
 #' If an option should be followed by an argument, it should be followed by a ":".
