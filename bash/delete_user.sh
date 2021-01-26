@@ -115,7 +115,7 @@ delete_user () {
   local l_USERNAME=$1
 
   # add user account
-  userdel $l_USERNAME
+  sudo userdel $l_USERNAME
 
 }  
 
