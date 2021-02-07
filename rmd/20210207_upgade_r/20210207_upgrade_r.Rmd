@@ -1,0 +1,76 @@
+---
+title: "Upgrade R"
+author: "Peter von Rohr"
+date: "2/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Disclaimer
+The process of upgrading R from 3.6.3 to 4.0.3 after a release upgrade of ubuntu from 18.04 lts to 20.04 lts (focal) is described. 
+
+
+# Resource
+The main recourse, we follow is
+
+* https://rtask.thinkr.fr/installation-of-r-4-0-on-ubuntu-20-04-lts-and-tips-for-spatial-packages/
+
+
+# Preparation
+After the upgrade to focal, the old versions of R, RStudio server and Shiny-server are still all running. We first stop the RStudio-server and the shiny-server with
+
+```
+# rstudio https://support.rstudio.com/hc/en-us/articles/200532327-Managing-the-Server
+  749  sudo rstudio-server stop
+# checking active sessions  
+  752  sudo rstudio-server active-sessions
+# shiny https://docs.rstudio.com/shiny-server/#stopping-and-starting
+  754  sudo systemctl stop shiny-server
+```
+
+
+# Clean Up Sources List
+Entries leading to repositories of old versions must be cleaned-up. Therefore, we checked 
+
+```
+sudo vi /etc/apt/sources.list
+```
+
+All entries were commented out by the upgrade process to focal.
+
+
+# Remove Old Versions of R
+First, we have to remove old versions of R
+
+```
+sudo apt-get purge -y r-base* r-recommended r-cran-*
+sudo apt autoremove -y
+sudo apt update
+```
+
+
+
+# New Repository
+
+```
+sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/'
+```
+
+Get the keys
+
+```
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+sudo apt update
+```
+
+
+# Install R 4.0
+
+```
+sudo apt install -y r-base r-base-core r-recommended r-base-dev
+```
+
+
