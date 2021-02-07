@@ -82,3 +82,10 @@ wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.4.1103-a
 sudo gdebi rstudio-server-1.4.1103-amd64.deb
 ```
 
+# Update R-Packages
+
+```
+sudo su - -c"R -e 'update.packages(repos = \"https://cloud.r-project.org\", ask = FALSE)'"
+
+```
+
