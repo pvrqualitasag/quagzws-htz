@@ -74,3 +74,11 @@ sudo apt install -y r-base r-base-core r-recommended r-base-dev
 ```
 
 
+# Upgrade R-Studio Server
+
+```
+sudo apt-get install gdebi-core
+wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.4.1103-amd64.deb
+sudo gdebi rstudio-server-1.4.1103-amd64.deb
+```
+
