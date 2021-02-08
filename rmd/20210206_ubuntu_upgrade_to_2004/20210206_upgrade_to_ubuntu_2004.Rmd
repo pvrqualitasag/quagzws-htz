@@ -45,3 +45,27 @@ sudo do-release-upgrade -d
 ```
 
 
+## Step 4: Clean-up
+Close open ports in ufw
+
+```
+sudo ufw delete allow 1022/tcp
+sudo ufw status
+```
+
+Close other open ports
+
+```
+FIRSTPORT=10087
+LASTPORT=10096
+#seq $FIRSTPORT $LASTPORT
+for p in `seq $FIRSTPORT $LASTPORT`
+do
+  echo " * Close port $p ..."
+  sudo ufw delete allow ${p}/tcp
+  sleep 2
+done
+sudo ufw status
+
+```
+
