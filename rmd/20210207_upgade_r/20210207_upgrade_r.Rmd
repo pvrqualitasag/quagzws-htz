@@ -24,6 +24,9 @@ After the upgrade to focal, the old versions of R, RStudio server and Shiny-serv
 
 ```
 # rstudio https://support.rstudio.com/hc/en-us/articles/200532327-Managing-the-Server
+# checking active sessions  
+  752  sudo rstudio-server active-sessions
+  sudo rstudio-server force-suspend-all
   749  sudo rstudio-server stop
 # checking active sessions  
   752  sudo rstudio-server active-sessions
