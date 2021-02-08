@@ -1,0 +1,47 @@
+---
+title: "Upgrade To Ubuntu 20.04 lts"
+author: "Peter von Rohr"
+date: "2/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Disclaimer
+This document describes the upgrade process to Ubuntu 20.04 lts on the rented machines.
+
+
+## Resource
+The upgrade is done according to https://ubuntu.com/blog/how-to-upgrade-from-ubuntu-18-04-lts-to-20-04-lts-today
+
+
+## Step 1: Upgrade old system
+
+```
+sudo apt-get update
+sudo apt-get upgrade -y
+```
+To clean-up old un-needed packages, it is recommended to do 
+
+```
+sudo apt-get autoremove
+```
+
+
+## Step 2: Firewall
+As a security messure it is recommended to open an additional port 
+
+```
+sudo ufw allow 1022/tcp comment 'Temp open port ssh tcp port 1022 for upgrade'
+```
+
+
+## Step 3: Upgrade
+
+```
+sudo do-release-upgrade -d
+```
+
+
