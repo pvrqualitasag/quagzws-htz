@@ -17,11 +17,16 @@ This document describes the upgrade process to Ubuntu 20.04 lts on the rented ma
 The upgrade is done according to https://ubuntu.com/blog/how-to-upgrade-from-ubuntu-18-04-lts-to-20-04-lts-today
 
 
+## Preparation
+The preparations consist of stopping the shiny-server and the rstudio-server. This is described in '20210207_upgrade_r.Rmd'
+
+
 ## Step 1: Upgrade old system
 
 ```
 sudo apt-get update
 sudo apt-get upgrade -y
+sudo apt dist-upgrade -y
 ```
 To clean-up old un-needed packages, it is recommended to do 
 
