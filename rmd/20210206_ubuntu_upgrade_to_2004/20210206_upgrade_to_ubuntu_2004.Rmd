@@ -31,7 +31,7 @@ sudo apt dist-upgrade -y
 To clean-up old un-needed packages, it is recommended to do 
 
 ```
-sudo apt-get autoremove
+sudo apt-get autoremove -y
 ```
 
 
