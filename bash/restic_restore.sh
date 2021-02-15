@@ -158,7 +158,7 @@ check_run_as_root
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
 BCKUPDIR=''
-JOBFILE=/home/quagadmin/backup/job/restic_backup.job
+JOBDEF=/home/quagadmin/backup/job/restic_backup.job
 RESTICPARFILE=/home/quagadmin/backup/par/restic_backup.par
 RESTICSNAPSHOTID=
 RESTICRESTORETARGET=/tmp/restic_restore
