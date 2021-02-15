@@ -284,10 +284,11 @@ if [ "$BCKUPDIR" != '' ]
 then
   run_restic_bck $BCKUPDIR
 else
-cat $JOBFILE | while read job
-do
-  run_restic_bck $job
-done
+  cat $JOBFILE | while read job
+  do
+    run_restic_bck $job
+  done
+fi
 
 #' ## List the Snapshots
 #' Write the list of snapshots to the logfile
