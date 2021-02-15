@@ -154,6 +154,7 @@ fi
 
 #' ## Sudo Checks
 #' This script must be run as sudoer
+log_msg "$SCRIPT" ' * Checking for sudo ...'
 check_for_sudo
 
 
@@ -161,9 +162,10 @@ check_for_sudo
 #' Before deleting the user account, the home directory is packed into a tar-archive
 #+ tar-home
 USERHOME="/home/${USERNAME}"
-if [ -e "$USERHOME" ]
+log_msg "$SCRIPT" " * Determined home: $USERHOME ..." 
+if [ -d "$USERHOME" ]
 then
-  echo "Backup user's home directory of $USERNAME ..." 
+  log_msg "$SCRIPT" " * Backup user's home directory of $USERNAME ..." 
   tar -cvzf "$USERNAME".tgz $USERHOME
 fi
 
@@ -177,9 +179,9 @@ delete_user $USERNAME
 #' ## Remove Homedirectory
 #' Delete home directory
 #+ rm-home-dir
-if [ -e "$USERHOME" ]
+if [ -d "$USERHOME" ]
 then
-  echo "Delete home directory of $USERNAME ..." 
+  log_msg "$SCRIPT" " * Delete home directory of $USERNAME ..." 
   sudo rm -rf $USERHOME
 fi
 
