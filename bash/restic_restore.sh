@@ -59,8 +59,9 @@ usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
   $ECHO "Usage: $SCRIPT -j <restore_job> -p <parameter_file> -s <snapshot_id> -t <restore_target>"
-  $ECHO "  where -j <restore_job>     --  data to be restored, either from job file or by specifying a directory"
-  $ECHO "        -p <parameter_file>  --  parameter file defining restic repository"
+  $ECHO "  where -d <backup dir>      --  directory to be restored from backup                                           (optional)"
+  $ECHO "        -j <restore_job>     --  data to be restored, either from job file or by specifying a directory         (optional)"
+  $ECHO "        -p <parameter_file>  --  parameter file defining restic repository                                      (optional)"
   $ECHO "        -s <snapshot_id>     --  give specify snapshot_id to be restored, o/w most recent snapshot is restored  (optional)"
   $ECHO "        -t <restore_target>  --  specify target directory where data should be restored                         (optional)"
   $ECHO ""
@@ -156,14 +157,18 @@ check_run_as_root
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
-JOBDEF=
+BCKUPDIR=''
+JOBFILE=/home/quagadmin/backup/job/restic_backup.job
 RESTICPARFILE=/home/quagadmin/backup/par/restic_backup.par
 RESTICSNAPSHOTID=
 RESTICRESTORETARGET=/tmp/restic_restore
-while getopts ":j:p:s:th" FLAG; do
+while getopts ":d:j:p:s:th" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
+      ;;
+    d)
+      BCKUPDIR=$OPTARG
       ;;
     j)
       JOBDEF=$OPTARG
@@ -233,32 +238,26 @@ then
 else
   # in case the job definition is a file, then all directories in that file
   #  are restored
-  if [ -f "$JOBDEF" ]
+  if [ "$BCKUPDIR" != '' ]
   then
-    cat $JOBDEF | while read f
-    do
-      log_msg "$SCRIPT" " * Restore data from $f ..."
-      get_latest_snapshot_id $f
-      restic restore $RESTICSNAPSHOTID --target $RESTICRESTORETARGET
-    done
-  elif [ -d "$JOBDEF" ]
-  then
-      log_msg "$SCRIPT" " * Restore data from $JOBDEF ..."
-      get_latest_snapshot_id $JOBDEF
-      restic restore $RESTICSNAPSHOTID --target $RESTICRESTORETARGET
-  else
-    log_msg "$SCRIPT" " * CANNOT restore with definition $JOBDEF ..."
-    exit 1
-  fi
+    log_msg "$SCRIPT" " * Restore data from $JOBDEF ..."
+    get_latest_snapshot_id $BCKUPDIR
+    restic restore $RESTICSNAPSHOTID --target $RESTICRESTORETARGET
+  else  
+    if [ -f "$JOBDEF" ]
+    then
+      cat $JOBDEF | while read f
+      do
+        log_msg "$SCRIPT" " * Restore data from $f ..."
+        get_latest_snapshot_id $f
+        restic restore $RESTICSNAPSHOTID --target $RESTICRESTORETARGET
+      done
+    else
+      log_msg "$SCRIPT" " * CANNOT restore with definition $JOBDEF ..."
+      exit 1
+    fi
+  fi  
 fi
-
-
-
-
-#' ## Your Code
-#' Continue to put your code here
-#+ your-code-here
-
 
 
 #' ## End of Script
