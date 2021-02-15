@@ -8,10 +8,16 @@
 #' Seamless automatic backup of source directories.
 #'
 #' ## Description
-#' Backups of different source directories are done using restic. This script can be run as daily cronjob to do backups regularly.
+#' Backups of different source directories are done using restic. This script can 
+#' be run as daily cronjob to do backups regularly. The backup-script implements 
+#' a backup plan that keeps seven daily-backups, five weekly backups, twelve 
+#' monthly backups and ten yearly backups. All other snapshots are removed from 
+#' the backup repository.
 #'
 #' ## Details
-#' The repository used by restic is directly on the sftp-server.
+#' The repository used by restic is directly on the sftp-server that is rented 
+#' together with the dedicated server. To avoid permission problems, the backup 
+#' script is run as root. 
 #'
 #' ## Example
 #' # use default inputs
@@ -290,6 +296,13 @@ else
     run_restic_bck $job
   done
 fi
+
+#' ## Forget Old Snapshots
+#' Snapshots that do not match the backup plan are removed
+echo >> $RESTICLOGFILE
+log_msg_to_logfile $SCRIPT ' * Prune old snapshots ...'
+restic forget --prune --keep-daily 7 --keep-weekly 5 --keep-monthly 12 --keep-yearly 10
+
 
 #' ## List the Snapshots
 #' Write the list of snapshots to the logfile
