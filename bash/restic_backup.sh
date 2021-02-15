@@ -59,8 +59,9 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -e <exclude_file> -j <job_file> -l <restic_log_file> -m <email_address> -r <restic_repository> -p <restic_password> -r <restic_repository> -w <restic_password> -v"
-  $ECHO "  where -e <exclude_file>       --  specify exclude_file containing directories to be excluded                (optional)"
+  $ECHO "Usage: $SCRIPT -d <backup_dir> -e <exclude_file> -j <job_file> -l <restic_log_file> -m <email_address> -r <restic_repository> -p <restic_password> -r <restic_repository> -w <restic_password> -v"
+  $ECHO "  where -d <backup dir>         --  specify directory to be backed up                                         (optional)"
+  $ECHO "        -e <exclude_file>       --  specify exclude_file containing directories to be excluded                (optional)"
   $ECHO "        -j <job_file>           --  specify job_file containing the sources to be backed up                   (optional)"
   $ECHO "        -l <restic_log_file>    --  specify restic log file                                                   (optional)"
   $ECHO "        -m <email_address>      --  notification e-mail address                                               (optional)"
@@ -144,6 +145,24 @@ df_remote_backup () {
  echo "df -h" | sftp $l_REMOTE >> $RESTICLOGFILE
 }
 
+#' ### Run Restic Backup Job
+#' Run restic backup for a given directory
+#+ run-restic-bck-fun
+run_restic_bck () {
+  local l_BCK_DIR=$1
+  if [ -d "$l_BCK_DIR" ]
+  then
+    if [ "$RESTICEXCLUDEFILE" != '' ] && [ -f "$RESTICEXCLUDEFILE" ]
+    then
+      restic backup --exclude-file=$RESTICEXCLUDEFILE $l_BCK_DIR &>> $RESTICLOGFILE
+    else
+      restic backup $l_BCK_DIR &>> $RESTICLOGFILE
+    fi
+  else
+    log_msg_to_logfile 'run_restic_bck' " * Cannot find path to backup source: $l_BCK_DIR"
+  fi  
+}
+
 #' ## Main Body of Script
 #' The main body of the script starts here. 
 
@@ -152,6 +171,7 @@ df_remote_backup () {
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
+BCKUPDIR=''
 JOBFILE=/home/quagadmin/backup/job/restic_backup.job
 RESTICEXCLUDEFILE=/home/quagadmin/backup/job/restic_exclude.txt
 RESTICREPOSITORY=''
@@ -160,10 +180,18 @@ RESTICLOGFILE=/home/quagadmin/backup/log/$(date +"%Y%m%d%H%M%S"_restic_backup.lo
 EMAILADDRESS=''
 RESTICPARFILE=/home/quagadmin/backup/par/restic_backup.par
 VERBOSE='FALSE'
-while getopts ":e:j:l:m:p:r:w:Vh" FLAG; do
+while getopts ":d:e:j:l:m:p:r:w:Vh" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
+      ;;
+    d)
+      if [ -d "$OPTARG" ]
+      then
+        BCKUPDIR=$OPTARG
+      else
+        usage " * ERROR: Cannot find backup directory: $OPTARG"
+      fi
       ;;
     e)  
       if [ -f "$OPTARG" ]
@@ -252,19 +280,13 @@ export RESTIC_PASSWORD="$RESTICPASSWORD"
 #' ## Run Backup Jobs
 #' In a loop over the lines of JOBFILE do the backup for every directory
 #+ run-backup-job
+if [ "$BCKUPDIR" != '' ]
+then
+  run_restic_bck $BCKUPDIR
+else
 cat $JOBFILE | while read job
 do
-  if [ -d "$job" ]
-  then
-    if [ "$RESTICEXCLUDEFILE" != '' ] && [ -f "$RESTICEXCLUDEFILE" ]
-    then
-      restic backup --exclude-file=$RESTICEXCLUDEFILE $job &>> $RESTICLOGFILE
-    else
-      restic backup $job &>> $RESTICLOGFILE
-    fi
-  else
-    echo " * Cannot find path to backup source: $job" >> $RESTICLOGFILE
-  fi
+  run_restic_bck $job
 done
 
 #' ## List the Snapshots
