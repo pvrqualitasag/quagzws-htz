@@ -301,7 +301,7 @@ fi
 #' Snapshots that do not match the backup plan are removed
 echo >> $RESTICLOGFILE
 log_msg_to_logfile $SCRIPT ' * Prune old snapshots ...'
-restic forget --prune --keep-daily 7 --keep-weekly 5 --keep-monthly 12 --keep-yearly 10
+restic forget --prune --keep-daily 7 --keep-weekly 5 --keep-monthly 12 --keep-yearly 10 &>> $RESTICLOGFILE
 
 
 #' ## List the Snapshots
@@ -324,7 +324,7 @@ rm -rf tmp_restic_snapshots.txt
 #+ restic-check-data-to-log
 echo >> $RESTICLOGFILE
 log_msg_to_logfile $SCRIPT ' * Checking backup data integrity ...'
-restic check >> $RESTICLOGFILE
+restic check &>> $RESTICLOGFILE
 
 #' ## Write Disk-Free to Logfile
 #' Disk-free status of remote sftp-backup is written to logfile
