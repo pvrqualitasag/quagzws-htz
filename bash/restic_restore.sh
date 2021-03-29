@@ -162,7 +162,7 @@ JOBDEF=/home/quagadmin/backup/job/restic_backup.job
 RESTICPARFILE=/home/quagadmin/backup/par/restic_backup.par
 RESTICSNAPSHOTID=
 RESTICRESTORETARGET=/tmp/restic_restore
-while getopts ":d:j:p:s:th" FLAG; do
+while getopts ":d:j:p:s:t:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
