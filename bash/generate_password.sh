@@ -103,7 +103,7 @@ log_msg () {
 #' Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #' getopts. This is required to get my unrecognized option code to work.
 #+ getopts-parsing, eval=FALSE
-PASSWDLENGTH=8
+PASSWDLENGTH=12
 QUIETMODE='FALSE'
 while getopts ":ql:h" FLAG; do
   case $FLAG in
