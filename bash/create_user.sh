@@ -60,11 +60,13 @@ SERVER=`hostname`                          # put hostname of server in variable 
 usage () {
   local l_MSG=$1
   $ECHO "Usage Error: $l_MSG"
-  $ECHO "Usage: $SCRIPT -u <user> -p <password> -s <default_shell> -g <additional_group>"
+  $ECHO "Usage: $SCRIPT -u <user> -p <password> -s <default_shell> -g <additional_group> -e <email-address> -n <first-name>"
   $ECHO "  where -u <user>              --  username"
   $ECHO "        -p <password>          --  (optional) password"
   $ECHO "        -s <default_shell>     --  (optional) specify default shell to be used"
   $ECHO "        -g <additional_group>  --  (optional) additional user group to which user should be added, multiple groups can be separated by semi-colon"
+  $ECHO "        -e <email-address>     --  (optional) e-mail address to which password is sent"
+  $ECHO "        -n <first-name>        --  (optional) first name used in e-mail"
   $ECHO ""
   exit 1
 }
@@ -171,6 +173,22 @@ check_for_sudoer () {
   fi
 }
 
+prepare_email () {
+  local l_EMAILPATH=$EMAILDIR/${USERNAME}.txt
+  echo "To: $EMAILADDR" > $l_EMAILPATH
+  echo "From: info@qualitasag.ch" >> $l_EMAILPATH
+  echo "Subject: Rented Servers" >> $l_EMAILPATH
+  echo >> $l_EMAILPATH
+  if [ "$FIRSTNAME" != '' ];then
+    echo "Dear ${FIRSTNAME}," >> $l_EMAILPATH
+  else
+    echo "To whom it may concern," >> $l_EMAILPATH
+  fi
+  echo "Please find below the required information for the rented servers of FB-ZWS @ QAG." >> $l_EMAILPATH
+  echo "Best regards, server admin team of FB-ZWS @ QAG" >> $l_EMAILPATH
+
+}
+
 #' ## Main Body of Script
 #' The main body of the script starts here.
 #+ start-msg, eval=FALSE
@@ -190,16 +208,25 @@ check_for_sudoer
 #+ getopts-parsing, eval=FALSE
 ADDUGROUP=""
 OUTPUTDIR=/home/quagadmin/user_admin/created
+EMAILDIR=/home/quagadmin/user_admin/email
 PASSWORD='' #`tr -dc A-Za-z0-9_ < /dev/urandom | head -c8`
-USERNAME=""
+EMAILADDR=''
+FIRSTNAME=''
+USERNAME=''
 DEFAULTSHELL=/bin/bash
-while getopts ":g:o:p:u:s:h" FLAG; do
+while getopts ":e:g:n:o:p:u:s:h" FLAG; do
   case $FLAG in
     h)
       usage "Help message for $SCRIPT"
       ;;
+    e)
+      EMAILADDR=$OPTARG
+      ;;
     g)
       ADDUGROUP=$OPTARG
+      ;;
+    n)
+      FIRSTNAME=$OPTARG
       ;;
     o)
       OUTPUTDIR=$OPTARG
@@ -263,6 +290,14 @@ then
     log_msg "$SCRIPT" " * Add user to group: $g ..."
     add_user_to_grp $g $USERNAME
   done  
+fi
+
+#' ## Prepare E-Mail to send pwd
+#' The e-mail text is prepared to be sent together with the password
+if [ "$EMAILADDR" != '' ]
+then
+  log_msg $SCRIPT " * Prepare e-mail text ..."
+  prepare_email
 fi
 
 #' ## End of Script
