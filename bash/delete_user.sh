@@ -155,7 +155,7 @@ fi
 #' ## Sudo Checks
 #' This script must be run as sudoer
 log_msg "$SCRIPT" ' * Checking for sudo ...'
-check_for_sudo
+#check_for_sudo
 
 
 #' ## Archive Home Directory
