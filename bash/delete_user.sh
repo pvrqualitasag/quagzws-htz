@@ -166,7 +166,7 @@ log_msg "$SCRIPT" " * Determined home: $USERHOME ..."
 if [ -d "$USERHOME" ]
 then
   log_msg "$SCRIPT" " * Backup user's home directory of $USERNAME ..." 
-  tar -cvzf "$USERNAME".tgz $USERHOME
+  sudo tar -cvzf "$USERNAME".tgz $USERHOME
 fi
 
 
