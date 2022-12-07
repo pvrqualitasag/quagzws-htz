@@ -179,6 +179,13 @@ check_for_sudoer () {
 #' to be sent via ssmtp
 prepare_email () {
   local l_EMAILPATH=$EMAILDIR/${USERNAME}.txt
+  # create e-mail dir, if it does not exist
+  if [ ! -e "$EMAILDIR" ]
+  then 
+    log_msg prepare_email " * Create e-mail dir: $EMAILDIR ..."
+    mkdir -p $EMAILDIR
+  fi
+  log_msg prepare_email " * Write e-mail text to $l_EMAILPATH ..."
   echo "To: $EMAILADDR" > $l_EMAILPATH
   echo "From: info@qualitasag.ch" >> $l_EMAILPATH
   echo "Subject: Rented Servers" >> $l_EMAILPATH
