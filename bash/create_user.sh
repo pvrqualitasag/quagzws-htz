@@ -173,6 +173,10 @@ check_for_sudoer () {
   fi
 }
 
+#' ### Prepare E-mail
+#' The access information is sent to new users via e-mail. 
+#' The e-mail message is prepared as text file ready 
+#' to be sent via ssmtp
 prepare_email () {
   local l_EMAILPATH=$EMAILDIR/${USERNAME}.txt
   echo "To: $EMAILADDR" > $l_EMAILPATH
